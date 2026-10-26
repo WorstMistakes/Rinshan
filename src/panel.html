@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+  /* Deep plum and gold, matching Tenhou's own lobby */
+  :root {
+    --bg: #141019;
+    --side: #19131f;
+    --surface: #211a2b;
+    --surface-2: #2a2237;
+    --hover: #33294a;
+    --line: #2f2640;
+    --text: #f3eef9;
+    --muted: #a99cbd;
+    --faint: #7a6d8f;
+    --gold: #e6c36a;
+    --gold-2: #c9973b;
+    --gold-ink: #2a1d06;
+    --violet: #b294f5;
+    --violet-bg: rgba(157, 123, 234, .14);
+    --violet-line: rgba(157, 123, 234, .45);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    color: var(--text);
+    font: 14px/1.45 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    user-select: none; -webkit-user-select: none;
+  }
+  body {
+    display: grid; grid-template-columns: 220px 1fr;
+    background:
+      radial-gradient(900px 500px at 110% -20%, rgba(124, 82, 214, .28), transparent 60%),
+      radial-gradient(600px 400px at -10% 120%, rgba(230, 195, 106, .08), transparent 60%),
+      var(--bg);
+  }
+  svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---- Sidebar ---- */
+  aside {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 20px 14px; background: rgba(25, 19, 31, .85);
+    border-right: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px 18px; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+    background: linear-gradient(145deg, #3a2a57, #241a35);
+    border: 1px solid rgba(230, 195, 106, .45);
+    color: var(--gold); font: 700 20px/1 "Yu Gothic UI", "Meiryo", sans-serif;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .06);
+  }
+  .brand b { display: block; font-size: 15px; }
+  .brand small { color: var(--faint); font-size: 12px; }
+
+  .nav {
+    display: flex; align-items: center; gap: 11px; width: 100%;
+    padding: 10px 12px; border: 0; border-radius: 10px;
+    background: none; color: var(--muted); font: inherit; text-align: left; cursor: pointer;
+    position: relative;
+  }
+  .nav:hover { background: rgba(255, 255, 255, .04); color: var(--text); }
+  .nav[aria-selected="true"] {
+    color: var(--gold);
+    background: linear-gradient(90deg, rgba(230, 195, 106, .16), rgba(230, 195, 106, .02));
+  }
+  .nav[aria-selected="true"]::before {
+    content: ""; position: absolute; left: -14px; top: 9px; bottom: 9px; width: 3px;
+    border-radius: 0 3px 3px 0; background: var(--gold);
+  }
+  .spacer { flex: 1; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; padding: 12px 8px; color: var(--faint); font-size: 12px; align-items: center; }
+  kbd {
+    font: 600 11px/1 "Segoe UI", sans-serif; color: var(--muted);
+    padding: 4px 6px; border-radius: 5px; background: var(--surface-2);
+    border: 1px solid var(--line); border-bottom-width: 2px; text-align: center;
+  }
+  .exit {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 9px; border-radius: 10px; border: 1px solid var(--line);
+    background: none; color: var(--muted); font: inherit; cursor: pointer;
+  }
+  .exit:hover { color: #ffb4a8; border-color: rgba(255, 140, 120, .4); background: rgba(255, 120, 100, .06); }
+
+  /* ---- Content ---- */
+  main { overflow-y: auto; padding: 26px 30px 30px; }
+  main::-webkit-scrollbar { width: 10px; }
+  main::-webkit-scrollbar-thumb { background: var(--hover); border-radius: 5px; border: 2px solid var(--bg); }
+  section { display: none; max-width: 980px; }
+  section.active { display: block; animation: fade .18s ease-out; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } }
+  h1 { margin: 0; font-size: 22px; font-weight: 650; letter-spacing: -.01em; }
+  .sub { margin: 4px 0 22px; color: var(--muted); }
+  h2 { margin: 26px 0 10px; font-size: 12px; font-weight: 650; color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 9px 16px; border-radius: 10px; border: 1px solid transparent;
+    font-family: inherit; font-size: 13.5px; font-weight: 600; line-height: 1.2; cursor: pointer; white-space: nowrap;
+    transition: transform .08s, filter .15s, background .15s;
+  }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn svg.i { width: 16px; height: 16px; }
+  .btn.gold {
+    color: var(--gold-ink);
+    background: linear-gradient(180deg, var(--gold), var(--gold-2));
+    box-shadow: 0 6px 16px rgba(201, 151, 59, .28), inset 0 1px 0 rgba(255, 255, 255, .35);
+  }
+  .btn.gold:hover { filter: brightness(1.07); }
+  .btn.violet { color: var(--violet); background: var(--violet-bg); border-color: var(--violet-line); }
+  .btn.violet:hover { background: rgba(157, 123, 234, .22); }
+  .btn.ghost { color: var(--text); background: var(--surface-2); border-color: var(--line); }
+  .btn.ghost:hover { background: var(--hover); }
+  .btn.sm { padding: 6px 11px; font-size: 12.5px; border-radius: 8px; }
+  .btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+  .badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; background: rgba(157, 123, 234, .2); color: var(--violet); }
+
+  /* Last game hero */
+  .hero {
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+    padding: 22px 24px; border-radius: 16px;
+    background: linear-gradient(135deg, #2e2245 0%, #221a30 55%, #1d1628 100%);
+    border: 1px solid rgba(230, 195, 106, .28);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, .35);
+  }
+  .hero::after {
+    content: "✦"; position: absolute; left: -18px; bottom: -58px;
+    font-size: 120px; color: rgba(230, 195, 106, .07); pointer-events: none;
+  }
+  .hero .info { flex: 1; min-width: 220px; }
+  .eyebrow { color: var(--gold); font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; }
+  .when { font-size: 28px; font-weight: 700; margin: 2px 0 8px; letter-spacing: -.01em; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 12px; padding: 3px 9px; border-radius: 99px; background: rgba(255, 255, 255, .07); color: var(--muted); }
+  .chip.mono { font-family: Consolas, monospace; }
+  .hero .actions { display: flex; flex-direction: column; gap: 8px; min-width: 250px; position: relative; z-index: 1; }
+  .hero .actions .btn { justify-content: flex-start; }
+  .hero .actions .btn .badge { margin-left: auto; }
+  .tools { display: flex; gap: 8px; margin-top: 12px; }
+
+  /* History */
+  .list { display: flex; flex-direction: column; gap: 6px; }
+  .item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px 10px 16px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    transition: background .15s, border-color .15s;
+  }
+  .item:hover { background: var(--surface-2); border-color: #3c3152; }
+  .item .date { font-weight: 650; min-width: 96px; }
+  .item .meta { flex: 1; display: flex; gap: 6px; align-items: center; min-width: 0; }
+  .item .actions { display: flex; gap: 6px; }
+  .empty {
+    padding: 28px; border-radius: 16px; text-align: center; color: var(--muted);
+    border: 1px dashed var(--line); background: rgba(255, 255, 255, .02);
+  }
+  .empty b { display: block; color: var(--text); font-size: 15px; margin-bottom: 4px; }
+
+  /* Settings rows with switches */
+  .group { border-radius: 14px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+  .setting {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 18px; cursor: pointer;
+  }
+  .setting + .setting { border-top: 1px solid var(--line); }
+  .setting:hover { background: rgba(255, 255, 255, .025); }
+  .setting .text { flex: 1; }
+  .setting .text b { display: block; font-weight: 600; }
+  .setting .text span { color: var(--muted); font-size: 12.5px; }
+  .setting .icon {
+    width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
+    background: var(--surface-2); color: var(--gold);
+  }
+
+  input[type=checkbox].switch {
+    appearance: none; -webkit-appearance: none; margin: 0; flex: none; cursor: pointer;
+    width: 44px; height: 24px; border-radius: 99px; position: relative;
+    background: #3a3050; transition: background .2s;
+  }
+  input[type=checkbox].switch::before {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+    background: #d9d0e6; box-shadow: 0 1px 3px rgba(0, 0, 0, .4); transition: transform .2s, background .2s;
+  }
+  input[type=checkbox].switch:checked { background: linear-gradient(180deg, var(--gold), var(--gold-2)); }
+  input[type=checkbox].switch:checked::before { transform: translateX(20px); background: #fff; }
+
+  .zoom { display: flex; align-items: center; gap: 12px; }
+  .zoom output { min-width: 48px; text-align: right; font-weight: 650; color: var(--gold); font-variant-numeric: tabular-nums; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 220px; height: 6px; border-radius: 99px; background: #3a3050; outline: none; }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
+    background: linear-gradient(180deg, var(--gold), var(--gold-2)); box-shadow: 0 2px 6px rgba(0, 0, 0, .4);
+  }
+
+  .appid { display: flex; gap: 8px; }
+  .appid input {
+    width: 190px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--text); font: 13px Consolas, monospace; user-select: text;
+  }
+  .appid input:focus { outline: none; border-color: var(--gold); }
+
+  .toast {
+    position: fixed; right: 22px; bottom: 22px; display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 12px; font-weight: 600;
+    color: var(--gold-ink); background: linear-gradient(180deg, var(--gold), var(--gold-2));
+    box-shadow: 0 10px 26px rgba(0, 0, 0, .4);
+    opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+  <aside role="tablist" aria-orientation="vertical">
+    <div class="brand">
+      <div class="logo">天</div>
+      <div><b>Tenhou</b><small>Desktop</small></div>
+    </div>
+    <button class="nav" role="tab" data-tab="games"><svg class="i" data-icon="list"></svg>Partidas</button>
+    <button class="nav" role="tab" data-tab="display"><svg class="i" data-icon="volume"></svg>Sonido y pantalla</button>
+    <button class="nav" role="tab" data-tab="options"><svg class="i" data-icon="sliders"></svg>Opciones</button>
+    <div class="spacer"></div>
+    <div class="keys">
+      <kbd>F2</kbd><span>Abrir / cerrar menú</span>
+      <kbd>F11</kbd><span>Pantalla completa</span>
+      <kbd>Ctrl M</kbd><span>Silenciar</span>
+      <kbd>Esc</kbd><span>Ocultar menú</span>
+    </div>
+    <button class="exit" data-cmd="exit"><svg class="i" data-icon="logout"></svg>Salir de Tenhou</button>
+  </aside>
+
+  <main>
+    <section data-panel="games">
+      <h1>Partidas</h1>
+      <p class="sub">Revisa tus partidas recientes o mándalas a analizar. El enlace se pega solo, pero tú decides cuándo enviarlo.</p>
+      <div id="hero"></div>
+      <div class="tools">
+        <button class="btn ghost sm" data-cmd="clipboardReplay"><svg class="i" data-icon="clipboard"></svg>Abrir replay copiado</button>
+      </div>
+      <h2>Historial</h2>
+      <div class="list" id="history"></div>
+    </section>
+
+    <section data-panel="display">
+      <h1>Sonido y pantalla</h1>
+      <p class="sub">Ajusta cómo se ve y se escucha Tenhou.</p>
+      <div class="group">
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="volume"></svg></div>
+          <div class="text"><b>Silenciar Tenhou</b><span>Corta el sonido solo de Tenhou · Ctrl+M</span></div>
+          <input type="checkbox" class="switch" id="muted" data-toggle="mute">
+        </label>
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="maximize"></svg></div>
+          <div class="text"><b>Pantalla completa</b><span>Sin bordes ni barra de título · F11</span></div>
+          <input type="checkbox" class="switch" id="fullscreen" data-toggle="fullscreen">
+        </label>
+        <div class="setting">
+          <div class="icon"><svg class="i" data-icon="zoom"></svg></div>
+          <div class="text"><b>Zoom</b><span>También con Ctrl + rueda del mouse · Ctrl+0 restablece</span></div>
+          <div class="zoom">
+            <input type="range" id="zoom" min="50" max="200" step="5">
+            <output id="zoomValue">100%</output>
+            <button class="btn ghost sm" id="zoomReset">100%</button>
+          </div>
+        </div>
+        <div class="setting">
+          <div class="icon"><svg class="i" data-icon="refresh"></svg></div>
+          <div class="text"><b>Recargar Tenhou</b><span>Si algo se traba · F5</span></div>
+          <button class="btn ghost sm" data-cmd="reload">Recargar</button>
+        </div>
+      </div>
+    </section>
+
+    <section data-panel="options">
+      <h1>Opciones</h1>
+      <p class="sub">Cómo se comporta la app en tu escritorio.</p>
+      <h2>Ventana de Tenhou</h2>
+      <div class="group">
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="tray"></svg></div>
+          <div class="text"><b>Minimizar a la bandeja</b><span>Al minimizar, Tenhou se esconde junto al reloj</span></div>
+          <input type="checkbox" class="switch" id="minimizeToTray" data-toggle="option:minimizeToTray">
+        </label>
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="shield"></svg></div>
+          <div class="text"><b>Confirmar antes de cerrar</b><span>Evita desconectarte de una partida por accidente</span></div>
+          <input type="checkbox" class="switch" id="confirmClose" data-toggle="option:confirmClose">
+        </label>
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="sun"></svg></div>
+          <div class="text"><b>Mantener la pantalla encendida</b><span>Mientras la ventana de Tenhou está visible</span></div>
+          <input type="checkbox" class="switch" id="keepAwake" data-toggle="option:keepAwake">
+        </label>
+      </div>
+      <h2>Discord</h2>
+      <div class="group">
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="discord"></svg></div>
+          <div class="text"><b>Mostrar en Discord</b><span>Lobby, buscando partida, sala, ronda y puesto, como hace osu!</span></div>
+          <input type="checkbox" class="switch" id="discord" data-toggle="option:discord">
+        </label>
+        <div class="setting">
+          <div class="icon"><svg class="i" data-icon="key"></svg></div>
+          <div class="text"><b>ID de aplicación de Discord (avanzado)</b><span id="discordHint"></span></div>
+          <div class="appid">
+            <input type="text" id="discordAppId" placeholder="123456789012345678" inputmode="numeric" spellcheck="false">
+            <button class="btn ghost sm" id="discordSave">Guardar</button>
+          </div>
+        </div>
+      </div>
+      <h2>Esta ventana</h2>
+      <div class="group">
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="pin"></svg></div>
+          <div class="text"><b>Mantener el menú siempre encima</b><span>Útil si lo tienes al costado mientras juegas</span></div>
+          <input type="checkbox" class="switch" id="panelOnTop" data-toggle="option:panelOnTop">
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"><svg class="i" data-icon="check"></svg>Enlace copiado</div>
+
+<script>
+  var ICONS = {
+    list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    volume: '<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>',
+    sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+    play: '<path d="m7 4 13 8-13 8z"/>',
+    copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    spark: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16v4M17 18h4"/>',
+    brain: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    clipboard: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+    maximize: '<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>',
+    zoom: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/>',
+    refresh: '<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/>',
+    tray: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
+    shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    pin: '<path d="M12 17v5"/><path d="M9 3h6l-1 7 4 4H6l4-4z"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    discord: '<path d="M8 4.5a15 15 0 0 0-3.5 1C2.5 9 2 12.5 2.3 16a14 14 0 0 0 4.4 2.3l1-1.6M16 4.5a15 15 0 0 1 3.5 1c2 3.5 2.5 7 2.2 10.5a14 14 0 0 1-4.4 2.3l-1-1.6"/><path d="M7 16.5c3.3 1.4 6.7 1.4 10 0"/><circle cx="9" cy="12" r="1.3"/><circle cx="15" cy="12" r="1.3"/>',
+    key: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/>'
+  };
+  function icon(name) {
+    return '<svg class="i" viewBox="0 0 24 24">' + ICONS[name] + '</svg>';
+  }
+  function hydrateIcons(root) {
+    root.querySelectorAll('svg[data-icon]').forEach(function (s) {
+      s.setAttribute('viewBox', '0 0 24 24');
+      s.innerHTML = ICONS[s.dataset.icon];
+      s.removeAttribute('data-icon');
+    });
+  }
+
+  var state = { games: [] };
+
+  function send(cmd, extra) {
+    var msg = { cmd: cmd };
+    for (var k in extra || {}) msg[k] = extra[k];
+    if (window.chrome && chrome.webview) chrome.webview.postMessage(JSON.stringify(msg));
+  }
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function button(label, cls, iconName, onClick, disabled, title) {
+    var b = el('button', 'btn ' + cls);
+    b.innerHTML = iconName ? icon(iconName) : '';
+    b.appendChild(document.createTextNode(label));
+    b.onclick = onClick;
+    b.disabled = !!disabled;
+    if (title) b.title = title;
+    return b;
+  }
+
+  function nagaTitle(g) {
+    return g.sanma ? 'NAGA solo analiza partidas de 4 jugadores' : 'Usa créditos de NAGA. El enlace se pega pero no se envía.';
+  }
+
+  function selectTab(name) {
+    document.querySelectorAll('.nav').forEach(function (t) { t.setAttribute('aria-selected', t.dataset.tab == name); });
+    document.querySelectorAll('section').forEach(function (s) { s.classList.toggle('active', s.dataset.panel == name); });
+  }
+
+  function renderGames() {
+    var hero = document.getElementById('hero');
+    var history = document.getElementById('history');
+    hero.textContent = '';
+    history.textContent = '';
+
+    if (!state.games.length) {
+      var empty = el('div', 'empty');
+      empty.appendChild(el('b', null, 'Todavía no hay partidas'));
+      empty.appendChild(document.createTextNode('Aparecerán aquí cuando termines tu primera partida en la app.'));
+      hero.appendChild(empty);
+      return;
+    }
+
+    var g = state.games[0];
+    var card = el('div', 'hero');
+    var info = el('div', 'info');
+    info.appendChild(el('div', 'eyebrow', 'Última partida'));
+    info.appendChild(el('div', 'when', g.when));
+    var chips = el('div', 'chips');
+    chips.appendChild(el('span', 'chip', g.players));
+    chips.appendChild(el('span', 'chip mono', g.id));
+    info.appendChild(chips);
+    card.appendChild(info);
+
+    var actions = el('div', 'actions');
+    actions.appendChild(button('Analizar con Mortal', 'gold', 'spark', function () { send('review', { service: 'mortal', id: g.id }); }));
+    var naga = button('Analizar con NAGA', 'violet', 'brain', function () { send('review', { service: 'naga', id: g.id }); }, g.sanma, nagaTitle(g));
+    naga.appendChild(el('span', 'badge', g.sanma ? 'solo 4p' : 'créditos'));
+    actions.appendChild(naga);
+    actions.appendChild(button('Ver replay', 'ghost', 'play', function () { send('replay', { id: g.id }); }));
+    card.appendChild(actions);
+    hero.appendChild(card);
+
+    state.games.forEach(function (g) {
+      var row = el('div', 'item');
+      row.appendChild(el('span', 'date', g.when));
+      var meta = el('div', 'meta');
+      meta.appendChild(el('span', 'chip', g.players));
+      row.appendChild(meta);
+      var acts = el('div', 'actions');
+      acts.appendChild(button('Replay', 'ghost sm', 'play', function () { send('replay', { id: g.id }); }));
+      acts.appendChild(button('Mortal', 'ghost sm', 'spark', function () { send('review', { service: 'mortal', id: g.id }); }));
+      acts.appendChild(button('NAGA', 'violet sm', 'brain', function () { send('review', { service: 'naga', id: g.id }); }, g.sanma, nagaTitle(g)));
+      acts.appendChild(button('Copiar', 'ghost sm', 'copy', function () { send('copy', { id: g.id }); toast(); }));
+      row.appendChild(acts);
+      history.appendChild(row);
+    });
+  }
+
+  function render(s) {
+    state = s;
+    ['muted', 'fullscreen', 'minimizeToTray', 'confirmClose', 'keepAwake', 'panelOnTop', 'discord'].forEach(function (id) {
+      document.getElementById(id).checked = !!s[id];
+    });
+    var appId = document.getElementById('discordAppId');
+    if (document.activeElement != appId) appId.value = s.discordAppId || '';
+    document.getElementById('discordHint').textContent = s.discordAppId
+      ? 'Usando tu propio ID. Bórralo y guarda para volver al de la app.'
+      : s.discordBuiltIn
+        ? 'Opcional: la app ya trae uno. Discord tiene que estar abierto en esta PC.'
+        : 'Créala en discord.com/developers/applications y pega aquí su Application ID.';
+    var pct = Math.round((s.zoom || 1) * 100);
+    document.getElementById('zoom').value = pct;
+    document.getElementById('zoomValue').textContent = pct + '%';
+    renderGames();
+  }
+
+  var toastTimer;
+  function toast() {
+    var t = document.getElementById('toast');
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 1600);
+  }
+
+  hydrateIcons(document);
+  document.querySelectorAll('.nav').forEach(function (t) { t.onclick = function () { selectTab(t.dataset.tab); }; });
+  document.querySelectorAll('[data-cmd]').forEach(function (b) { b.onclick = function () { send(b.dataset.cmd); }; });
+  document.querySelectorAll('[data-toggle]').forEach(function (c) {
+    c.onchange = function () {
+      var parts = c.dataset.toggle.split(':');
+      send(parts[0], parts[1] ? { name: parts[1] } : null);
+    };
+  });
+  var zoom = document.getElementById('zoom');
+  zoom.oninput = function () { document.getElementById('zoomValue').textContent = zoom.value + '%'; };
+  zoom.onchange = function () { send('zoom', { value: zoom.value / 100 }); };
+  document.getElementById('zoomReset').onclick = function () { send('zoom', { value: 1 }); };
+  function saveAppId() { send('discordAppId', { value: document.getElementById('discordAppId').value.trim() }); document.getElementById('discordAppId').blur(); }
+  document.getElementById('discordSave').onclick = saveAppId;
+  document.getElementById('discordAppId').onkeydown = function (e) { if (e.key == 'Enter') saveAppId(); };
+  window.addEventListener('keydown', function (e) {
+    if (e.key == 'Escape' || e.key == 'F2') { e.preventDefault(); send('close'); }
+    else if (e.key == 'F11') { e.preventDefault(); send('fullscreen'); }
+    else if (e.ctrlKey && (e.key == 'm' || e.key == 'M')) { e.preventDefault(); send('mute'); }
+  });
+
+  selectTab('games');
+</script>
+</body>
+</html>

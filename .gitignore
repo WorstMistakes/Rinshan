@@ -1,0 +1,13 @@
+# Compilado (se publica en GitHub Releases, no en el repo)
+dist/
+
+# Librería de WebView2: build.ps1 la descarga sola
+packages/
+
+# Archivos locales
+*.rar
+*.zip
+*.old.exe
+
+# Zips para subir a Releases
+release/

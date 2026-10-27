@@ -2,8 +2,12 @@
 
 What changed in each version of Rinshan. Downloads are on the [Releases](https://github.com/WorstMistakes/Rinshan/releases) page.
 
-## Unreleased
+## v1.5.0 — Unreleased
 
+- **Who's at your table**: the Games tab lists the players at your current or last table, with rank and rate, and opens their [Nodocchi](https://nodocchi.moe/) stats in one click. You can also look anyone up by name.
+- **Private lobbies**: save your friends' or club's lobbies (L1234) with a name and join them in one click. When you're in one, Rinshan offers to save it.
+- **Lobby on Discord** (optional, off by default): shows the private lobby number with a *Join lobby* button for your friends.
+- **Screenshots with F12**: saved to `Pictures\Rinshan` and copied, ready to paste in Discord.
 - **App log**: Rinshan keeps a small `log.txt` (start, errors, updates, Tenhou not loading) to attach to bug reports. It never records your Tenhou ID. Open it from **F2 → Options → Help**.
 - **Report a problem** button in **F2 → Options → Help**, with GitHub forms for bugs and translations.
 - Unexpected errors no longer close the app silently: they are logged and Rinshan keeps running when it can.

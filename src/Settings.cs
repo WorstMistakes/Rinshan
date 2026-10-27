@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 namespace Rinshan
 {
@@ -24,6 +25,9 @@ namespace Rinshan
         public string Language = "auto";    // auto, es, en or pt
         public bool TranslateTenhou = true;
         public bool CheckUpdates = true;
+        public bool ShareLobby = false;
+        // Saved private lobbies: number and a name the player chose
+        public List<KeyValuePair<string, string>> Lobbies = new List<KeyValuePair<string, string>>();
 
         readonly string path;
 
@@ -62,6 +66,15 @@ namespace Rinshan
             else if (!values.ContainsKey("language")) Language = "es";
             TranslateTenhou = ReadBool(values, "translatetenhou", TranslateTenhou);
             CheckUpdates = ReadBool(values, "checkupdates", CheckUpdates);
+            ShareLobby = ReadBool(values, "sharelobby", ShareLobby);
+            // lobbies=1234:Friends|5678:Club
+            if (values.TryGetValue("lobbies", out s))
+                foreach (var entry in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var colon = entry.IndexOf(':');
+                    var id = colon < 0 ? entry : entry.Substring(0, colon);
+                    if (TenhouPresence.IsPrivateLobby(id)) Lobbies.Add(new KeyValuePair<string, string>(id, colon < 0 ? "" : entry.Substring(colon + 1)));
+                }
         }
 
         static bool ReadRect(Dictionary<string, string> values, string prefix, out Rectangle rect)
@@ -103,7 +116,9 @@ namespace Rinshan
                 "discordappid=" + DiscordAppId,
                 "language=" + Language,
                 "translatetenhou=" + TranslateTenhou,
-                "checkupdates=" + CheckUpdates
+                "checkupdates=" + CheckUpdates,
+                "sharelobby=" + ShareLobby,
+                "lobbies=" + string.Join("|", Lobbies.Select(l => l.Key + ":" + l.Value))
             });
         }
     }

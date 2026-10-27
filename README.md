@@ -22,6 +22,9 @@
   - **Your recent games** (the 40 Tenhou keeps): watch the replay, copy the link or send it for review.
   - **Review with Mortal or NAGA**: opens the site with the game link **already pasted and highlighted**, but **never submits it for you**. You check it's the right game and press the button yourself, so a misclick never costs you NAGA credits.
   - Mute, fullscreen, zoom and settings.
+- **Who's at your table**: see the players at your current or last table with their rank and rate, and open their [Nodocchi](https://nodocchi.moe/) stats in one click.
+- **Private lobbies**: save your friends' lobbies and join them in one click. Optionally show the lobby on Discord with a *Join* button.
+- **Screenshots with F12**: saved to `Pictures\Rinshan` and copied, ready to paste.
 - **Discord Rich Presence**: friends see what you're doing, like with osu!
 
   | Moment | Discord shows |
@@ -55,6 +58,7 @@ Requires **Windows 10 or 11**. It uses WebView2, the Microsoft Edge engine that 
 |---|---|
 | `F2` | Open / close the menu |
 | `F11` | Fullscreen (`Esc` to leave) |
+| `F12` | Screenshot |
 | `F5` | Reload Tenhou |
 | `Ctrl` + `M` | Mute |
 | `Ctrl` + wheel / `Ctrl` + `0` | Zoom / reset zoom |

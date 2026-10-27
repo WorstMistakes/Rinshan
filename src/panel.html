@@ -195,6 +195,15 @@
     background: linear-gradient(180deg, var(--gold), var(--gold-2)); box-shadow: 0 2px 6px rgba(0, 0, 0, .4);
   }
 
+  .field { display: flex; gap: 8px; align-items: center; }
+  .field input {
+    flex: 1; min-width: 0; max-width: 320px; padding: 8px 11px; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); font: inherit; font-size: 13.5px; user-select: text;
+  }
+  .field input.short { flex: none; width: 90px; font-family: Consolas, monospace; }
+  .field input:focus { outline: none; border-color: var(--gold); }
+  .item .name { font-weight: 650; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip.you { background: rgba(230, 195, 106, .16); color: var(--gold); }
   .appid { display: flex; gap: 8px; }
   .appid input {
     width: 190px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line);
@@ -218,6 +227,7 @@
   .notice.show { display: flex; }
   .notice span { flex: 1; color: var(--text); }
   .notice.update { max-width: 980px; margin-bottom: 18px; }
+  #currentLobby { margin-bottom: 12px; }
 
   .toast {
     position: fixed; right: 22px; bottom: 22px; display: flex; align-items: center; gap: 8px;
@@ -236,12 +246,14 @@
       <div><b>Rinshan</b><small>for Tenhou</small></div>
     </div>
     <button class="nav" role="tab" data-tab="games"><svg class="i" data-icon="list"></svg><span data-i18n="navGames"></span></button>
+    <button class="nav" role="tab" data-tab="lobbies"><svg class="i" data-icon="door"></svg><span data-i18n="navLobbies"></span></button>
     <button class="nav" role="tab" data-tab="display"><svg class="i" data-icon="volume"></svg><span data-i18n="navDisplay"></span></button>
     <button class="nav" role="tab" data-tab="options"><svg class="i" data-icon="sliders"></svg><span data-i18n="navOptions"></span></button>
     <div class="spacer"></div>
     <div class="keys">
       <kbd>F2</kbd><span data-i18n="keyMenu"></span>
       <kbd>F11</kbd><span data-i18n="keyFullscreen"></span>
+      <kbd>F12</kbd><span data-i18n="keyScreenshot"></span>
       <kbd>Ctrl M</kbd><span data-i18n="keyMute"></span>
       <kbd>Esc</kbd><span data-i18n="keyHide"></span>
     </div>
@@ -261,14 +273,53 @@
       <div class="tools">
         <button class="btn ghost sm" data-cmd="clipboardReplay"><svg class="i" data-icon="clipboard"></svg><span data-i18n="openCopied"></span></button>
       </div>
+      <div id="tableBlock">
+        <h2 id="tableHeader"></h2>
+        <div class="list" id="table"></div>
+      </div>
+      <h2>Nodocchi</h2>
+      <div class="field">
+        <input type="text" id="nodocchiName" spellcheck="false" data-i18n-placeholder="nodocchiPlaceholder">
+        <button class="btn ghost sm" id="nodocchiSearch"><svg class="i" data-icon="search"></svg><span data-i18n="nodocchiSearch"></span></button>
+      </div>
       <h2 data-i18n="history"></h2>
       <div class="list" id="history"></div>
+    </section>
+
+    <section data-panel="lobbies">
+      <h1 data-i18n="navLobbies"></h1>
+      <p class="sub" data-i18n="lobbiesSub"></p>
+      <div class="notice" id="currentLobby">
+        <svg class="i" data-icon="door"></svg><span id="currentLobbyText"></span>
+        <button class="btn gold sm" id="saveCurrentLobby" data-i18n="saveLobby"></button>
+      </div>
+      <div class="list" id="lobbyList"></div>
+      <h2 data-i18n="addLobbyHeader"></h2>
+      <div class="field">
+        <input type="text" id="lobbyId" class="short" placeholder="L1234" maxlength="5" spellcheck="false">
+        <input type="text" id="lobbyName" maxlength="40" spellcheck="false" data-i18n-placeholder="lobbyNamePlaceholder">
+        <button class="btn ghost sm" id="addLobby" data-i18n="saveLobby"></button>
+      </div>
+      <h2>Discord</h2>
+      <div class="group">
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="discord"></svg></div>
+          <div class="text"><b data-i18n="shareLobbyTitle"></b><span data-i18n="shareLobbyDesc"></span></div>
+          <input type="checkbox" class="switch" id="shareLobby" data-toggle="option:shareLobby">
+        </label>
+      </div>
     </section>
 
     <section data-panel="display">
       <h1 data-i18n="navDisplay"></h1>
       <p class="sub" data-i18n="displaySub"></p>
       <div class="group">
+        <div class="setting">
+          <div class="icon"><svg class="i" data-icon="camera"></svg></div>
+          <div class="text"><b data-i18n="screenshotTitle"></b><span data-i18n="screenshotDesc"></span></div>
+          <button class="btn ghost sm" data-cmd="openScreenshots" data-i18n="openFolder"></button>
+          <button class="btn gold sm" data-cmd="screenshot" data-i18n="capture"></button>
+        </div>
         <label class="setting">
           <div class="icon"><svg class="i" data-icon="volume"></svg></div>
           <div class="text"><b data-i18n="muteTitle"></b><span data-i18n="muteDesc"></span></div>
@@ -419,6 +470,11 @@
     translate: '<path d="M4 5h8M8 3v2M6 5c0 4 2.5 7 6 8.5M10 5c-.5 3.5-3 6.5-6 8"/><path d="m13 21 4-9 4 9M14.5 18h5"/>',
     download: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    door: '<path d="M4 21h16M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17"/><path d="M14 12h.01"/>',
+    camera: '<path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    trash: '<path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15"/>',
     bug: '<rect x="8" y="6" width="8" height="14" rx="4"/><path d="M12 10v10M9 6.5 7.5 4M15 6.5 16.5 4M4 13h4M16 13h4M5 19l3-2M19 19l-3-2M5 8l3 2M19 8l-3 2"/>',
     file: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'
   };
@@ -464,6 +520,16 @@
       helpHeader: 'Ayuda',
       reportTitle: 'Reportar un problema', reportDesc: 'Algo falla o quedó sin traducir: avísanos en GitHub', reportButton: 'Reportar',
       logTitle: 'Registro de la app', logDesc: 'Adjunta log.txt a tu reporte para que veamos qué pasó', logButton: 'Abrir',
+      navLobbies: 'Salas privadas', keyScreenshot: 'Captura de pantalla',
+      tableNow: 'En tu mesa', tableLast: 'Tu última mesa', you: 'Tú',
+      nodocchiPlaceholder: 'Nombre de un jugador de Tenhou', nodocchiSearch: 'Buscar en Nodocchi',
+      lobbiesSub: 'Guarda las salas de tus amigos o de tu club y entra con un clic.',
+      inLobby: 'Estás en la sala privada L{id}.', saveLobby: 'Guardar', join: 'Entrar', remove: 'Quitar', here: 'Estás aquí',
+      noLobbies: 'Todavía no guardaste salas', noLobbiesDesc: 'Añade una abajo con su número, o entra a una en Tenhou y guárdala desde aquí.',
+      addLobbyHeader: 'Añadir sala', lobbyNamePlaceholder: 'Nombre (p. ej. Amigos)',
+      shareLobbyTitle: 'Mostrar la sala privada en Discord', shareLobbyDesc: 'Tus amigos ven su número y un botón para entrar. Cualquiera que vea tu perfil podrá unirse.',
+      screenshotTitle: 'Captura de pantalla', screenshotDesc: 'Se guarda en Imágenes\\Rinshan y se copia para pegarla · F12',
+      openFolder: 'Abrir carpeta', capture: 'Capturar',
       copied: 'Enlace copiado'
     },
     en: {
@@ -506,6 +572,16 @@
       helpHeader: 'Help',
       reportTitle: 'Report a problem', reportDesc: 'Something broken or left untranslated? Tell us on GitHub', reportButton: 'Report',
       logTitle: 'App log', logDesc: 'Attach log.txt to your report so we can see what happened', logButton: 'Open',
+      navLobbies: 'Private lobbies', keyScreenshot: 'Screenshot',
+      tableNow: 'At your table', tableLast: 'Your last table', you: 'You',
+      nodocchiPlaceholder: "A Tenhou player's name", nodocchiSearch: 'Search Nodocchi',
+      lobbiesSub: "Save your friends' or club's lobbies and join them in one click.",
+      inLobby: "You're in private lobby L{id}.", saveLobby: 'Save', join: 'Join', remove: 'Remove', here: "You're here",
+      noLobbies: 'No saved lobbies yet', noLobbiesDesc: 'Add one below by its number, or join one in Tenhou and save it from here.',
+      addLobbyHeader: 'Add a lobby', lobbyNamePlaceholder: 'Name (e.g. Friends)',
+      shareLobbyTitle: 'Show the private lobby on Discord', shareLobbyDesc: 'Friends see its number and a button to join. Anyone who sees your profile can join too.',
+      screenshotTitle: 'Screenshot', screenshotDesc: 'Saved to Pictures\\Rinshan and copied, ready to paste · F12',
+      openFolder: 'Open folder', capture: 'Capture',
       copied: 'Link copied'
     },
     pt: {
@@ -548,6 +624,16 @@
       helpHeader: 'Ajuda',
       reportTitle: 'Relatar um problema', reportDesc: 'Algo quebrado ou sem tradução? Avise a gente no GitHub', reportButton: 'Relatar',
       logTitle: 'Registro do app', logDesc: 'Anexe o log.txt ao seu relato para vermos o que aconteceu', logButton: 'Abrir',
+      navLobbies: 'Salas privadas', keyScreenshot: 'Captura de tela',
+      tableNow: 'Na sua mesa', tableLast: 'Sua última mesa', you: 'Você',
+      nodocchiPlaceholder: 'Nome de um jogador do Tenhou', nodocchiSearch: 'Buscar no Nodocchi',
+      lobbiesSub: 'Salve as salas dos seus amigos ou do seu clube e entre com um clique.',
+      inLobby: 'Você está na sala privada L{id}.', saveLobby: 'Salvar', join: 'Entrar', remove: 'Remover', here: 'Você está aqui',
+      noLobbies: 'Nenhuma sala salva ainda', noLobbiesDesc: 'Adicione uma abaixo pelo número, ou entre em uma no Tenhou e salve aqui.',
+      addLobbyHeader: 'Adicionar sala', lobbyNamePlaceholder: 'Nome (ex.: Amigos)',
+      shareLobbyTitle: 'Mostrar a sala privada no Discord', shareLobbyDesc: 'Seus amigos veem o número e um botão para entrar. Qualquer pessoa que veja seu perfil também pode entrar.',
+      screenshotTitle: 'Captura de tela', screenshotDesc: 'Salva em Imagens\\Rinshan e copiada, pronta para colar · F12',
+      openFolder: 'Abrir pasta', capture: 'Capturar',
       copied: 'Link copiado'
     }
   };
@@ -556,6 +642,7 @@
   function applyStrings() {
     document.documentElement.lang = lang;
     document.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function (e) { e.placeholder = t(e.dataset.i18nPlaceholder); });
   }
   function icon(name) {
     return '<svg class="i" viewBox="0 0 24 24">' + ICONS[name] + '</svg>';
@@ -663,6 +750,9 @@
     });
     document.getElementById('reloadNotice').classList.toggle('show', !!s.reloadNeeded);
     renderUpdate(s);
+    renderTable(s);
+    renderLobbies(s);
+    document.getElementById('shareLobby').checked = !!s.shareLobby;
     var appId = document.getElementById('discordAppId');
     if (document.activeElement != appId) appId.value = s.discordAppId || '';
     document.getElementById('discordHint').textContent = t(s.discordAppId ? 'appIdOwn' : s.discordBuiltIn ? 'appIdBuiltIn' : 'appIdNone');
@@ -670,6 +760,54 @@
     document.getElementById('zoom').value = pct;
     document.getElementById('zoomValue').textContent = pct + '%';
     renderGames();
+  }
+
+  function renderTable(s) {
+    var players = s.table || [], list = document.getElementById('table');
+    document.getElementById('tableBlock').style.display = players.length ? '' : 'none';
+    document.getElementById('tableHeader').textContent = t(s.inGame ? 'tableNow' : 'tableLast');
+    list.textContent = '';
+    players.forEach(function (p) {
+      var row = el('div', 'item');
+      row.appendChild(el('span', 'name', p.name));
+      var meta = el('div', 'meta');
+      if (p.you) meta.appendChild(el('span', 'chip you', t('you')));
+      if (p.rank) meta.appendChild(el('span', 'chip', p.rank));
+      if (p.rate) meta.appendChild(el('span', 'chip', p.rate));
+      row.appendChild(meta);
+      var acts = el('div', 'actions');
+      acts.appendChild(button('Nodocchi', 'ghost sm', 'user', function () { send('nodocchi', { name: p.name }); }));
+      row.appendChild(acts);
+      list.appendChild(row);
+    });
+  }
+
+  function renderLobbies(s) {
+    var lobbies = s.lobbies || [], list = document.getElementById('lobbyList');
+    var current = s.currentLobby, saved = lobbies.some(function (l) { return l.id == current; });
+    document.getElementById('currentLobby').classList.toggle('show', !!current && !saved);
+    if (current) document.getElementById('currentLobbyText').textContent = t('inLobby').replace('{id}', current);
+    list.textContent = '';
+    if (!lobbies.length) {
+      var empty = el('div', 'empty');
+      empty.appendChild(el('b', null, t('noLobbies')));
+      empty.appendChild(document.createTextNode(t('noLobbiesDesc')));
+      list.appendChild(empty);
+      return;
+    }
+    lobbies.forEach(function (l) {
+      var row = el('div', 'item');
+      row.appendChild(el('span', 'date', 'L' + l.id));
+      var meta = el('div', 'meta');
+      meta.appendChild(el('span', 'name', l.name));
+      if (l.id == current) meta.appendChild(el('span', 'chip you', t('here')));
+      row.appendChild(meta);
+      var acts = el('div', 'actions');
+      acts.appendChild(button(t('join'), 'gold sm', 'door', function () { send('joinLobby', { id: l.id }); }, s.inGame || l.id == current));
+      acts.appendChild(button(t('remove'), 'ghost sm', 'trash', function () { send('removeLobby', { id: l.id }); }));
+      row.appendChild(acts);
+      list.appendChild(row);
+    });
   }
 
   function renderUpdate(s) {
@@ -716,6 +854,27 @@
   document.getElementById('zoomReset').onclick = function () { send('zoom', { value: 1 }); };
   function saveAppId() { send('discordAppId', { value: document.getElementById('discordAppId').value.trim() }); document.getElementById('discordAppId').blur(); }
   document.getElementById('discordSave').onclick = saveAppId;
+  function searchNodocchi() {
+    var name = document.getElementById('nodocchiName').value.trim();
+    if (name) send('nodocchi', { name: name });
+  }
+  document.getElementById('nodocchiSearch').onclick = searchNodocchi;
+  document.getElementById('nodocchiName').onkeydown = function (e) { if (e.key == 'Enter') searchNodocchi(); };
+  function addLobby() {
+    var id = document.getElementById('lobbyId'), name = document.getElementById('lobbyName');
+    var digits = id.value.replace(/^[Ll]/, '').trim();
+    if (!/^[1-9][0-9]{3}$/.test(digits)) { id.focus(); id.select(); return; }
+    send('saveLobby', { id: digits, name: name.value.trim() });
+    id.value = name.value = '';
+  }
+  document.getElementById('addLobby').onclick = addLobby;
+  ['lobbyId', 'lobbyName'].forEach(function (f) {
+    document.getElementById(f).onkeydown = function (e) { if (e.key == 'Enter') addLobby(); };
+  });
+  document.getElementById('saveCurrentLobby').onclick = function () {
+    document.getElementById('lobbyId').value = 'L' + state.currentLobby;
+    document.getElementById('lobbyName').focus();
+  };
   document.getElementById('discordAppId').onkeydown = function (e) { if (e.key == 'Enter') saveAppId(); };
   window.addEventListener('keydown', function (e) {
     if (e.key == 'Escape' || e.key == 'F2') { e.preventDefault(); send('close'); }

@@ -41,7 +41,9 @@ namespace Rinshan
         FormWindowState stateBeforeTray = FormWindowState.Normal;
         bool confirmedExit;
         bool trayHintShown;
-        bool balloonIsUpdate;   // clicking the update balloon opens the menu
+        Action balloonClick;   // what clicking the last tray balloon does, if anything
+        // The players at the current or last table, seat 0 first (us): name, rank and rate
+        List<object> tablePlayers = new List<object>();
 
         UpdateInfo update;
         string updateStatus = "idle";   // idle, checking, latest, available, installing, failed
@@ -55,6 +57,7 @@ namespace Rinshan
             settings = new Settings(Path.Combine(dataDir, "settings.ini"));
             try { settings.Load(); } catch (Exception ex) { Log.Error("Could not read settings.ini", ex); }
             Lang.Set(settings.Language);
+            TenhouPresence.ShareLobby = settings.ShareLobby;
             Log.Write("Rinshan " + Updater.CurrentText + " started, " + WindowsVersion() + ", language " + Lang.Code);
 
             Text = "Rinshan";
@@ -83,7 +86,7 @@ namespace Rinshan
             tray.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) ShowFromTray(); };
             // Clicks on the game don't reach WinForms, so close the tray menu when the window is activated
             Activated += (s, e) => trayMenu.Close();
-            tray.BalloonTipClicked += (s, e) => { if (balloonIsUpdate) { ShowFromTray(); if (panel == null || !panel.Visible) TogglePanel(); } };
+            tray.BalloonTipClicked += (s, e) => { if (balloonClick != null) balloonClick(); };
 
             if (Updater.CleanUp()) Log.Write("Updated to " + Updater.CurrentText);
             updateTimer.Tick += (s, e) =>
@@ -283,6 +286,7 @@ window.addEventListener('keydown', function(e){
   var k = null;
   if (e.key == 'F2' && !e.ctrlKey && !e.altKey) k = 'menu';
   else if (e.key == 'F11') k = 'fullscreen';
+  else if (e.key == 'F12') k = 'screenshot';
   else if (e.key == 'Escape') k = 'escape';
   else if (e.ctrlKey && !e.altKey && (e.key == 'm' || e.key == 'M')) k = 'mute';
   else if (e.ctrlKey && e.key == '0') k = 'zoomreset';
@@ -299,6 +303,7 @@ window.addEventListener('keydown', function(e){
             {
                 case Keys.F2: shortcut = "menu"; break;
                 case Keys.F11: shortcut = "fullscreen"; break;
+                case Keys.F12: shortcut = "screenshot"; break;
                 case Keys.Escape: if (fullscreen) shortcut = "escape"; break;
                 case Keys.F5: shortcut = "reload"; break;
                 case Keys.Control | Keys.M: shortcut = "mute"; break;
@@ -320,6 +325,7 @@ window.addEventListener('keydown', function(e){
                 case "reload": if (web.CoreWebView2 != null) web.CoreWebView2.Reload(); break;
                 case "mute": ToggleMute(); break;
                 case "zoomreset": web.ZoomFactor = 1.0; break;
+                case "screenshot": TakeScreenshot(); break;
             }
         }
 
@@ -359,10 +365,49 @@ window.addEventListener('keydown', function(e){
                 "Tenhou is playing a sound: has your game started?", "O Tenhou está tocando um som: sua partida começou?"));
         }
 
-        void ShowBalloon(string title, string text, bool isUpdate = false)
+        void ShowBalloon(string title, string text, Action onClick = null)
         {
-            balloonIsUpdate = isUpdate;
+            balloonClick = onClick;
             tray.ShowBalloonTip(5000, title, text, ToolTipIcon.Info);
+        }
+
+        // ---- Screenshots ----
+
+        static string ScreenshotDirectory
+        {
+            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Rinshan"); }
+        }
+
+        // F12: saves what the Tenhou window shows to Pictures\Rinshan and copies it, ready to paste in Discord
+        async void TakeScreenshot()
+        {
+            if (web.CoreWebView2 == null) return;
+            try
+            {
+                Directory.CreateDirectory(ScreenshotDirectory);
+                var path = Path.Combine(ScreenshotDirectory, "Rinshan " + DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss") + ".png");
+                using (var stream = new MemoryStream())
+                {
+                    await web.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, stream);
+                    File.WriteAllBytes(path, stream.ToArray());
+                    stream.Position = 0;
+                    using (var image = Image.FromStream(stream)) Clipboard.SetImage(image);
+                }
+                ShowBalloon(Lang.T("Captura guardada", "Screenshot saved", "Captura salva"),
+                    Lang.T("También está copiada: pégala donde quieras. Clic para abrir la carpeta.",
+                        "It's also copied, ready to paste. Click to open the folder.",
+                        "Ela também foi copiada, pronta para colar. Clique para abrir a pasta."),
+                    () => OpenInExplorer(path));
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Screenshot failed", ex);
+            }
+        }
+
+        static void OpenInExplorer(string file)
+        {
+            try { System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + file + "\""); } catch { }
         }
 
         void UpdateKeepAwake()
@@ -494,7 +539,7 @@ window.addEventListener('keydown', function(e){
             if (isNew && !manual && (panel == null || !panel.Visible))
                 ShowBalloon(Lang.T("Hay una nueva versión de Rinshan", "A new version of Rinshan is available", "Há uma nova versão do Rinshan"),
                     Lang.T("Abre el menú (F2) para actualizar a la v", "Open the menu (F2) to update to v", "Abra o menu (F2) para atualizar para a v") +
-                    Updater.Format(update.Version) + ".", true);
+                    Updater.Format(update.Version) + ".", () => { ShowFromTray(); if (panel == null || !panel.Visible) TogglePanel(); });
         }
 
         async void InstallUpdate()
@@ -536,7 +581,81 @@ window.addEventListener('keydown', function(e){
             Dictionary<string, object> e;
             try { e = new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string, object>>(payload); }
             catch { return; }
-            if (e != null && presence.Apply(e) && settings.DiscordEnabled) discord.Set(presence.Activity);
+            if (e == null) return;
+            object kind;
+            if (e.TryGetValue("s", out kind) && (kind as string) == "players")
+            {
+                SetTablePlayers(e);
+                return;
+            }
+            if (presence.Apply(e) && settings.DiscordEnabled) discord.Set(presence.Activity);
+            UpdatePanel();   // the lobby the player is in shows up in the menu
+        }
+
+        // The UN message: names are URL-encoded, dan and rate are comma lists, seat 0 is us
+        void SetTablePlayers(Dictionary<string, object> e)
+        {
+            var names = e["names"] as System.Collections.ArrayList;
+            if (names == null) return;
+            var dans = Convert.ToString(e.ContainsKey("dan") ? e["dan"] : "").Split(',');
+            var rates = Convert.ToString(e.ContainsKey("rate") ? e["rate"] : "").Split(',');
+            var players = new List<object>();
+            for (int i = 0; i < names.Count; i++)
+            {
+                var raw = names[i] as string;
+                if (string.IsNullOrEmpty(raw)) continue;   // the empty seat in three-player games
+                string name;
+                try { name = Uri.UnescapeDataString(raw); } catch { name = raw; }
+                int dan;
+                double rate;
+                players.Add(new Dictionary<string, object> {
+                    { "name", name }, { "you", i == 0 },
+                    { "rank", i < dans.Length && int.TryParse(dans[i], out dan) ? RankName(dan) : "" },
+                    { "rate", i < rates.Length && double.TryParse(rates[i], System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out rate) ? "R" + Math.Round(rate) : "" }
+                });
+            }
+            if (players.Count < 3) return;   // reconnect messages can carry only some names
+            tablePlayers = players;
+            UpdatePanel();
+        }
+
+        // Tenhou's rank index: 0 novice, 1-9 for 9 kyu to 1 kyu, 10-19 for 1 to 10 dan, 20 Tenhou
+        static string RankName(int dan)
+        {
+            if (dan <= 0) return Lang.T("Novato", "Novice", "Novato");
+            if (dan < 10) return (10 - dan) + " kyu";
+            if (dan < 20) return (dan - 9) + " dan";
+            return "Tenhou";
+        }
+
+        static string NodocchiUrl(string name)
+        {
+            return "https://nodocchi.moe/tenhoulog/#!&name=" + Uri.EscapeDataString(name);
+        }
+
+        void JoinLobby(string id)
+        {
+            if (!TenhouPresence.IsPrivateLobby(id) || web.CoreWebView2 == null) return;
+            if (presence.InGame)
+            {
+                MessageBox.Show(panel, Lang.T("Termina la partida antes de cambiar de sala.", "Finish your game before changing lobbies.",
+                    "Termine a partida antes de mudar de sala."), "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            web.CoreWebView2.Navigate("https://tenhou.net/3/?L" + id);
+            ClosePanel();
+        }
+
+        void SaveLobby(string id, string name)
+        {
+            if (!TenhouPresence.IsPrivateLobby(id)) return;
+            // '|' and ':' separate the entries in settings.ini
+            name = new string((name ?? "").Where(c => c != '|' && c != ':' && !char.IsControl(c)).ToArray()).Trim();
+            if (name.Length > 40) name = name.Substring(0, 40);
+            settings.Lobbies.RemoveAll(l => l.Key == id);
+            settings.Lobbies.Add(new KeyValuePair<string, string>(id, name));
+            SaveSettings();
         }
 
         // The project's Discord application. Application ids are public, so shipping it means
@@ -638,7 +757,10 @@ window.addEventListener('keydown', function(e){
                 { "lang", Lang.Code }, { "language", settings.Language }, { "translateTenhou", settings.TranslateTenhou },
                 { "reloadNeeded", tenhouReloadNeeded },
                 { "version", Updater.CurrentText }, { "checkUpdates", settings.CheckUpdates }, { "updateStatus", updateStatus },
-                { "updateVersion", update != null ? Updater.Format(update.Version) : null }
+                { "updateVersion", update != null ? Updater.Format(update.Version) : null },
+                { "table", tablePlayers }, { "inGame", presence.InGame }, { "currentLobby", presence.PrivateLobby },
+                { "lobbies", settings.Lobbies.Select(l => (object)new Dictionary<string, object> { { "id", l.Key }, { "name", l.Value } }).ToList() },
+                { "shareLobby", settings.ShareLobby }
             };
         }
 
@@ -672,6 +794,12 @@ window.addEventListener('keydown', function(e){
                         var _ = UpdateTranslateConfig();
                         tenhouReloadNeeded = true;
                     }
+                    else if ((string)value == "shareLobby")
+                    {
+                        settings.ShareLobby = TenhouPresence.ShareLobby = !settings.ShareLobby;
+                        presence.Refresh();
+                        if (settings.DiscordEnabled) discord.Set(presence.Activity);
+                    }
                     else if ((string)value == "checkUpdates")
                     {
                         settings.CheckUpdates = !settings.CheckUpdates;
@@ -685,10 +813,35 @@ window.addEventListener('keydown', function(e){
                     return;
                 case "openLog":
                     // Explorer opens with log.txt selected, ready to drag into the bug report
-                    if (File.Exists(Log.FilePath))
-                        try { System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + Log.FilePath + "\""); } catch { }
+                    if (File.Exists(Log.FilePath)) OpenInExplorer(Log.FilePath);
                     else BrowserWindow.OpenExternal(dataDir);
                     return;
+                case "screenshot": TakeScreenshot(); return;
+                case "openScreenshots":
+                    Directory.CreateDirectory(ScreenshotDirectory);
+                    BrowserWindow.OpenExternal(ScreenshotDirectory);
+                    return;
+                case "nodocchi":
+                    msg.TryGetValue("name", out value);
+                    var player = (Convert.ToString(value) ?? "").Trim();
+                    if (player.Length > 0 && env != null)
+                        new BrowserWindow(env, "Nodocchi — " + player, NodocchiUrl(player), null, Icon).Show();
+                    return;
+                case "joinLobby":
+                    msg.TryGetValue("id", out value);
+                    JoinLobby(value as string);
+                    return;
+                case "saveLobby":
+                    object lobbyName;
+                    msg.TryGetValue("id", out value);
+                    msg.TryGetValue("name", out lobbyName);
+                    SaveLobby(Convert.ToString(value).Trim().TrimStart('L', 'l'), lobbyName as string);
+                    break;
+                case "removeLobby":
+                    msg.TryGetValue("id", out value);
+                    settings.Lobbies.RemoveAll(l => l.Key == value as string);
+                    SaveSettings();
+                    break;
                 case "releaseNotes":
                     if (update != null) BrowserWindow.OpenExternal(update.PageUrl);
                     return;

@@ -21,6 +21,7 @@ namespace Rinshan
       case 'HELO': post({s:'lobby'}); break;
       case 'GO': post({s:'game', type:m.type, lobby:m.lobby}); break;
       case 'INIT': post({s:'round', seed:m.seed, ten:m.ten}); break;
+      case 'UN': if (m.n0) post({s:'players', names:[m.n0, m.n1, m.n2, m.n3], dan:m.dan, rate:m.rate}); break;
       case 'AGARI': case 'RYUUKYOKU': if (m.owari) post({s:'end', owari:m.owari}); break;
     }
   }
@@ -51,6 +52,28 @@ namespace Rinshan
         long? startedAt;
         int gameType;
         bool inGame;
+        string lobby;   // "0" or empty for the ranked lobby
+
+        // Shows the private lobby number on Discord, with a button for friends to join
+        public static bool ShareLobby;
+
+        public bool InGame
+        {
+            get { return inGame; }
+        }
+
+        // The private lobby the player is in, e.g. "1234", or null
+        public string PrivateLobby
+        {
+            get { return IsPrivateLobby(lobby) ? lobby : null; }
+        }
+
+        // Private lobbies open with tenhou.net/3/?L1234
+        public static bool IsPrivateLobby(string id)
+        {
+            int n;
+            return id != null && id.Length == 4 && int.TryParse(id, out n) && n >= 1000;
+        }
 
         // Events since the last lobby/search/game start, replayed to redo the texts in another language
         readonly List<Dictionary<string, object>> events = new List<Dictionary<string, object>>();
@@ -88,13 +111,15 @@ namespace Rinshan
                 case "search":
                     var t = (Get(e, "t") ?? "").Split(',');
                     int searchType;
+                    lobby = t[0];
                     var room = t.Length > 1 && int.TryParse(t[1], out searchType) ? RoomLabel(searchType, t[0]) : null;
                     Show(Lang.T("Buscando partida", "Looking for a game", "Procurando partida"), room, Now());
                     break;
                 case "game":
                     int.TryParse(Get(e, "type"), out gameType);
                     inGame = true;
-                    Show(Lang.T("Jugando · ", "Playing · ", "Jogando · ") + RoomLabel(gameType, Get(e, "lobby")), Lang.T("Empezando", "Starting", "Começando"), Now());
+                    lobby = Get(e, "lobby");
+                    Show(Lang.T("Jugando · ", "Playing · ", "Jogando · ") + RoomLabel(gameType, lobby), Lang.T("Empezando", "Starting", "Começando"), Now());
                     break;
                 case "round":
                     if (!inGame) return false;
@@ -103,10 +128,11 @@ namespace Rinshan
                 case "end":
                     if (!inGame) return false;
                     inGame = false;
-                    Show(Lang.T("Terminó una partida · ", "Finished a game · ", "Terminou uma partida · ") + RoomLabel(gameType, null), ResultLabel(Get(e, "owari")), null);
+                    Show(Lang.T("Terminó una partida · ", "Finished a game · ", "Terminou uma partida · ") + RoomLabel(gameType, lobby), ResultLabel(Get(e, "owari")), null);
                     break;
                 case "offline":
                     inGame = false;
+                    lobby = null;
                     details = state = null;
                     startedAt = null;
                     Activity = null;
@@ -123,10 +149,16 @@ namespace Rinshan
             state = newState;
             startedAt = start;
 
+            var buttons = new List<object>();
+            if (ShareLobby && PrivateLobby != null)
+                buttons.Add(new Dictionary<string, object> {
+                    { "label", Lang.T("Entrar a la sala L", "Join lobby L", "Entrar na sala L") + PrivateLobby },
+                    { "url", "https://tenhou.net/3/?L" + PrivateLobby } });
+            buttons.Add(new Dictionary<string, object> { { "label", Lang.T("Jugar Tenhou", "Play Tenhou", "Jogar Tenhou") }, { "url", "https://tenhou.net/3/" } });
             var activity = new Dictionary<string, object> {
                 { "details", details },
                 { "assets", new Dictionary<string, object> { { "large_image", LargeImage }, { "large_text", "Rinshan · for Tenhou" } } },
-                { "buttons", new object[] { new Dictionary<string, object> { { "label", Lang.T("Jugar Tenhou", "Play Tenhou", "Jogar Tenhou") }, { "url", "https://tenhou.net/3/" } } } }
+                { "buttons", buttons.ToArray() }
             };
             if (state != null) activity["state"] = state;
             if (startedAt != null) activity["timestamps"] = new Dictionary<string, object> { { "start", startedAt.Value } };
@@ -148,7 +180,8 @@ namespace Rinshan
         public static string RoomLabel(int type, string lobby)
         {
             string room;
-            if (!string.IsNullOrEmpty(lobby) && lobby != "0") room = Lang.T("Sala privada", "Private lobby", "Sala privada");
+            if (!string.IsNullOrEmpty(lobby) && lobby != "0")
+                room = Lang.T("Sala privada", "Private lobby", "Sala privada") + (ShareLobby && IsPrivateLobby(lobby) ? " L" + lobby : "");
             else
             {
                 switch (type & 0xA0)

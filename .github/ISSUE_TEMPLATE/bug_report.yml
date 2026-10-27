@@ -1,0 +1,42 @@
+name: Bug report
+description: Something in Rinshan doesn't work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! Rinshan is unofficial: problems with Tenhou itself (its servers, ranks, rules) are for Tenhou.
+        You can write in English, Spanish or Portuguese.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected and what happened instead. Screenshots help a lot.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Rinshan version
+      description: Shown in F2 → Options → Updates.
+      placeholder: v1.5.0
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows
+      options:
+        - Windows 11
+        - Windows 10
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: |
+        F2 → Options → Help → App log opens the folder with `log.txt`. Drag the file here, or paste its last lines.
+        It only has app events (start, errors, updates), never your Tenhou ID.
+      render: text

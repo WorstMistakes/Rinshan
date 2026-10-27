@@ -67,7 +67,9 @@ Requires **Windows 10 or 11**. It uses WebView2, the Microsoft Edge engine that 
 
 **How do I change the language?** **F2 → Options → Language**: Automatic (follows Windows), Español, English or Português. Reload Tenhou afterwards (`F5`), ideally outside a game.
 
-**A translation is wrong or something is still in Japanese.** Please [open an issue](../../issues) with a screenshot. The translations live in [`src/translate.js`](src/translate.js) and are easy to extend.
+**Something isn't working.** Use **F2 → Options → Help → Report a problem**, or [open an issue](../../issues/new/choose) directly. Attaching `log.txt` (**F2 → Options → Help → App log**) helps a lot: it only has app events, never your Tenhou ID. What changed in each version is in the [changelog](CHANGELOG.md).
+
+**A translation is wrong or something is still in Japanese.** Please [open an issue](../../issues/new/choose) with a screenshot. The translations live in [`src/translate.js`](src/translate.js) and are easy to extend.
 
 **The window stays black.** Tenhou may be under maintenance or not responding. After 20 seconds the app shows a notice with a retry button.
 
@@ -81,7 +83,7 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 
 The first run downloads the WebView2 library from NuGet. Output goes to `dist\`, and `tools\package.ps1` zips it into `release\`.
 
-**Releasing:** bump `AssemblyVersion` in `src/Program.cs`, then push a matching tag (e.g. `v1.4.0`). GitHub Actions builds the zip and attaches it to a draft release; write the notes and publish it, and the app's updater picks it up.
+**Releasing:** bump `AssemblyVersion` in `src/Program.cs`, move the changelog's *Unreleased* notes under the new version, then push a matching tag (e.g. `v1.4.0`). GitHub Actions builds the zip and attaches it to a draft release; write the notes and publish it, and the app's updater picks it up.
 
 | Folder | Contents |
 |---|---|

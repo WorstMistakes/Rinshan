@@ -51,9 +51,11 @@ namespace Rinshan
         public MainForm()
         {
             dataDir = DataDirectory();
+            Log.Init(dataDir);
             settings = new Settings(Path.Combine(dataDir, "settings.ini"));
-            try { settings.Load(); } catch { }
+            try { settings.Load(); } catch (Exception ex) { Log.Error("Could not read settings.ini", ex); }
             Lang.Set(settings.Language);
+            Log.Write("Rinshan " + Updater.CurrentText + " started · Windows " + Environment.OSVersion.Version + " · language " + Lang.Code);
 
             Text = "Rinshan";
             BackColor = Color.Black;
@@ -83,7 +85,7 @@ namespace Rinshan
             Activated += (s, e) => trayMenu.Close();
             tray.BalloonTipClicked += (s, e) => { if (balloonIsUpdate) { ShowFromTray(); if (panel == null || !panel.Visible) TogglePanel(); } };
 
-            Updater.CleanUp();
+            if (Updater.CleanUp()) Log.Write("Updated to " + Updater.CurrentText);
             updateTimer.Tick += (s, e) =>
             {
                 updateTimer.Interval = 6 * 60 * 60 * 1000;
@@ -139,6 +141,7 @@ namespace Rinshan
             }
             catch (Exception ex)
             {
+                Log.Error("WebView2 could not start", ex);
                 MessageBox.Show(this, Lang.T(
                     "No se pudo iniciar WebView2.\n\nInstala el \"Microsoft Edge WebView2 Runtime\" e inténtalo de nuevo.\n\n",
                     "WebView2 could not be started.\n\nInstall the \"Microsoft Edge WebView2 Runtime\" and try again.\n\n",
@@ -150,6 +153,7 @@ namespace Rinshan
             }
 
             var core = web.CoreWebView2;
+            Log.Write("WebView2 " + env.BrowserVersionString);
             core.Settings.IsStatusBarEnabled = false;
             core.Settings.AreDefaultContextMenusEnabled = false;
             core.Settings.IsZoomControlEnabled = true;
@@ -187,6 +191,12 @@ namespace Rinshan
                 else RunShortcut(message);
             };
             ApplyDiscordSettings();
+
+            core.NavigationCompleted += (s, e) =>
+            {
+                if (!e.IsSuccess) Log.Write("Could not load " + core.Source + ": " + e.WebErrorStatus);
+            };
+            core.ProcessFailed += (s, e) => Log.Write("Browser process failed: " + e.ProcessFailedKind + " (" + e.Reason + ")");
 
             // Started on NavigationStarting: when Tenhou's scripts hang, the page never finishes loading
             core.NavigationStarting += (s, e) =>
@@ -230,17 +240,18 @@ namespace Rinshan
             loadWatchdog.Start();
         }
 
-        void OnLoadWatchdog(object sender, EventArgs e)
+        async void OnLoadWatchdog(object sender, EventArgs e)
         {
             loadWatchdog.Stop();
-            if (web.CoreWebView2 != null && web.CoreWebView2.Source.StartsWith("https://tenhou.net/"))
-                web.CoreWebView2.ExecuteScriptAsync(LoadFailedOverlay
+            if (web.CoreWebView2 == null || !web.CoreWebView2.Source.StartsWith("https://tenhou.net/")) return;
+            var result = await web.CoreWebView2.ExecuteScriptAsync(LoadFailedOverlay
                     .Replace("%TITLE%", Lang.T("No se puede conectar con Tenhou", "Cannot connect to Tenhou", "Não foi possível conectar ao Tenhou"))
                     .Replace("%TEXT%", Lang.T(
                         "Puede estar en mantenimiento o haber un problema de conexión con su servidor. Inténtalo de nuevo en unos minutos.",
                         "It may be under maintenance, or there is a problem reaching its server. Try again in a few minutes.",
                         "Pode estar em manutenção ou com problemas de conexão com o servidor. Tente de novo em alguns minutos."))
                     .Replace("%RETRY%", Lang.T("Reintentar", "Retry", "Tentar de novo")));
+            if (result == "\"shown\"") Log.Write("Tenhou did not load within 20 s (maintenance or connection problem)");
         }
 
         static bool IsTenhouViewer(string url)
@@ -456,8 +467,9 @@ window.addEventListener('keydown', function(e){
                 update = await Updater.CheckAsync();
                 updateStatus = update != null ? "available" : "latest";
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Error("Update check failed", ex);
                 // A failed background check (offline, GitHub down) just waits for the next one
                 updateStatus = manual ? "failed" : update != null ? "available" : "idle";
             }
@@ -481,6 +493,7 @@ window.addEventListener('keydown', function(e){
 
             updateStatus = "installing";
             UpdatePanel();
+            Log.Write("Installing " + Updater.Format(update.Version));
             try
             {
                 Program.RestartPath = await Updater.InstallAsync(update);
@@ -489,6 +502,7 @@ window.addEventListener('keydown', function(e){
             }
             catch (Exception ex)
             {
+                Log.Error("Update failed", ex);
                 updateStatus = "failed";
                 UpdatePanel();
                 MessageBox.Show(panel != null && panel.Visible ? (IWin32Window)panel : this, Lang.T(
@@ -650,6 +664,15 @@ window.addEventListener('keydown', function(e){
                     break;
                 case "checkUpdates": CheckForUpdates(true); return;
                 case "installUpdate": InstallUpdate(); return;
+                case "reportIssue":
+                    BrowserWindow.OpenExternal("https://github.com/WorstMistakes/Rinshan/issues/new/choose");
+                    return;
+                case "openLog":
+                    // Explorer opens with log.txt selected, ready to drag into the bug report
+                    if (File.Exists(Log.FilePath))
+                        try { System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + Log.FilePath + "\""); } catch { }
+                    else BrowserWindow.OpenExternal(dataDir);
+                    return;
                 case "releaseNotes":
                     if (update != null) BrowserWindow.OpenExternal(update.PageUrl);
                     return;

@@ -29,6 +29,22 @@ namespace Rinshan
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+                // Errors nobody caught go to the log; on the UI thread the app keeps running
+                Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+                Application.ThreadException += (s, e) =>
+                {
+                    Log.Crash(e.Exception);
+                    MessageBox.Show(Lang.T(
+                        "Algo salió mal, pero Rinshan sigue abierto. Si vuelve a pasar, repórtalo desde F2 → Opciones → Ayuda.",
+                        "Something went wrong, but Rinshan is still running. If it happens again, report it from F2 → Options → Help.",
+                        "Algo deu errado, mas o Rinshan continua aberto. Se acontecer de novo, relate em F2 → Opções → Ajuda."),
+                        "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                };
+                AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+                {
+                    var ex = e.ExceptionObject as Exception;
+                    if (ex != null) Log.Crash(ex);
+                };
                 var form = new MainForm();
 
                 var listener = new Thread(() =>

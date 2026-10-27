@@ -161,17 +161,23 @@ namespace Rinshan
             }
         }
 
-        // Leftovers from the previous update
-        public static void CleanUp()
+        // Leftovers from the previous update. Returns true when there were some, i.e. this is the first
+        // start after updating.
+        public static bool CleanUp()
         {
+            bool updated = false;
             try
             {
                 foreach (var old in Directory.GetFiles(AppDirectory, "*.old"))
+                {
+                    updated = true;
                     try { File.Delete(old); } catch { }
+                }
                 var work = Path.Combine(Path.GetTempPath(), "Rinshan-update");
                 if (Directory.Exists(work)) Directory.Delete(work, true);
             }
             catch { }
+            return updated;
         }
     }
 }

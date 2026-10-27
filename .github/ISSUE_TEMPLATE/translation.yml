@@ -1,0 +1,30 @@
+name: Translation
+description: Japanese left untranslated, or a translation that is wrong
+labels: [translation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Yaku and mahjong terms stay in romaji on purpose in every language (Tanyao, Chiitoitsu, Ryuukyoku…), so everyone sees the same words.
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - English
+        - Español
+        - Português
+    validations:
+      required: true
+  - type: textarea
+    id: where
+    attributes:
+      label: Where is it?
+      description: A screenshot showing the text, and where in Tenhou it appears (lobby, table, results, replay…).
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested translation
+      description: Optional. If you know the Japanese text or a better wording, add it here.

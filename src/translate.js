@@ -148,7 +148,26 @@
 
   // Patterns with numbers, applied before the word list
   var D = '([0-9０-９]+)';
+  var ROOM = { '般': 'Ippan', '上': 'Joukyuu', '特': 'Tokujou', '鳳': 'Houou', '若': 'Wakaba', '銀': 'Gin', '琥': 'Kohaku', '孔': 'Kujaku' };
+
+  // Lobby room codes, e.g. 四般東喰赤速: players, room, East/South, then kuitan, red fives, fast, chips.
+  // In ranked rooms kuitan and red fives are the norm, so only their absence is spelled out.
+  function roomName(m, players, room, length, kui, aka, speed, chips) {
+    var parts = [];
+    if (players == '三') parts.push('3P');
+    parts.push(ROOM[room], length == '南' ? pick('South', 'Sur') : pick('East', 'Este'));
+    if (!chips || chips.length == 1) {
+      if (!kui) parts.push(pick('no-kui', 'sin kui'));
+      if (!aka) parts.push(pick('no-red', 'sin rojos'));
+    }
+    if (speed == '速') parts.push(pick('Fast', 'Rápido'));
+    if (speed == '光') parts.push('Hikari');
+    if (chips) parts.push(pick('Chips', 'Fichas') + (chips.length > 1 ? ' ' + num(chips.charAt(1)) : ''));
+    return parts.join(' ');
+  }
+
   var RULES = [
+    [/([三四])([般上特鳳若銀琥孔])([東南])(喰)?(赤)?(速|光)?(祝[０２５]?)?/g, roomName],
     [new RegExp('([東南西北])([1-4１-４])局', 'g'), function (m, w, n) { return WIND[w][col - 1] + ' ' + num(n); }],
     [new RegExp(D + '本場', 'g'), function (m, n) { return num(n) + ' honba'; }],
     [new RegExp(D + '巡目', 'g'), function (m, n) { return pick('Turn ', 'Turno ') + num(n); }],
@@ -223,14 +242,20 @@
   }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'title', 'value'] });
   document.addEventListener('DOMContentLoaded', function () { walk(document); });
 
-  // A few labels are painted on canvases; only whole known words are swapped there, never partial text
+  // The table is painted on canvases, piece by piece ("東" "1" "局", "5" "級"), with no room for longer
+  // words. Only whole known pieces are swapped there, with short forms: the round reads "E1".
+  var CANVAS = { '局': '', '本場': '', '級': 'kyu', '段': 'dan', '初': '1', '一': '1', '二': '2', '三': '3', '四': '4',
+    '五': '5', '六': '6', '七': '7', '八': '8', '九': '9', '十': '10' };
+  function canvasText(t) {
+    return CANVAS.hasOwnProperty(t) ? CANVAS[t] : dict.hasOwnProperty(t) ? dict[t] : null;
+  }
   var C2D = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
   if (C2D) ['fillText', 'strokeText', 'measureText'].forEach(function (name) {
     var original = C2D[name];
     C2D[name] = function (text) {
       if (typeof text == 'string' && JAPANESE.test(text)) {
-        var t = text.trim();
-        if (dict.hasOwnProperty(t)) { var args = [].slice.call(arguments); args[0] = dict[t]; return original.apply(this, args); }
+        var t = canvasText(text.trim());
+        if (t !== null) { var args = [].slice.call(arguments); args[0] = t; return original.apply(this, args); }
       }
       return original.apply(this, arguments);
     };

@@ -39,6 +39,7 @@ if (Test-Path $exe) { Rename-Item $exe 'Rinshan.old.exe' -ErrorAction SilentlyCo
     "/r:$out\Microsoft.Web.WebView2.Core.dll" `
     "/r:$out\Microsoft.Web.WebView2.WinForms.dll" `
     /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll `
+    /r:System.IO.Compression.dll /r:System.IO.Compression.FileSystem.dll `
     "$root\src\*.cs"
 if ($LASTEXITCODE -ne 0) { throw "La compilación falló" }
 Write-Host "OK -> $exe"

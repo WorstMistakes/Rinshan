@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 [assembly: System.Reflection.AssemblyTitle("Rinshan")]
 [assembly: System.Reflection.AssemblyProduct("Rinshan")]
-[assembly: System.Reflection.AssemblyVersion("1.3.0.0")]
+[assembly: System.Reflection.AssemblyVersion("1.4.0.0")]
 
 namespace Rinshan
 {
@@ -44,7 +44,12 @@ namespace Rinshan
 
                 Application.Run(form);
             }
+            // After an update, start the new exe once this instance is gone and has released its mutex
+            if (RestartPath != null)
+                try { System.Diagnostics.Process.Start(RestartPath); } catch { }
         }
+
+        public static string RestartPath;
 
         // Files embedded with /resource in build.ps1 (panel.html, translate.js)
         public static string LoadResource(string name)

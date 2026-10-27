@@ -23,6 +23,7 @@ namespace Rinshan
         public string DiscordAppId = "";
         public string Language = "auto";    // auto, es or en
         public bool TranslateTenhou = true;
+        public bool CheckUpdates = true;
 
         readonly string path;
 
@@ -60,6 +61,7 @@ namespace Rinshan
             // Settings from before 1.2 have no language: those versions were Spanish only, so stay in Spanish
             else if (!values.ContainsKey("language")) Language = "es";
             TranslateTenhou = ReadBool(values, "translatetenhou", TranslateTenhou);
+            CheckUpdates = ReadBool(values, "checkupdates", CheckUpdates);
         }
 
         static bool ReadRect(Dictionary<string, string> values, string prefix, out Rectangle rect)
@@ -100,7 +102,8 @@ namespace Rinshan
                 "discord=" + DiscordEnabled,
                 "discordappid=" + DiscordAppId,
                 "language=" + Language,
-                "translatetenhou=" + TranslateTenhou
+                "translatetenhou=" + TranslateTenhou,
+                "checkupdates=" + CheckUpdates
             });
         }
     }

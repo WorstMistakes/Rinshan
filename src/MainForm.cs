@@ -41,6 +41,12 @@ namespace Rinshan
         FormWindowState stateBeforeTray = FormWindowState.Normal;
         bool confirmedExit;
         bool trayHintShown;
+        bool balloonIsUpdate;   // clicking the update balloon opens the menu
+
+        UpdateInfo update;
+        string updateStatus = "idle";   // idle, checking, latest, available, installing, failed
+        // The first check waits until Tenhou has loaded, then once every 6 hours
+        readonly Timer updateTimer = new Timer { Interval = 15000 };
 
         public MainForm()
         {
@@ -75,6 +81,15 @@ namespace Rinshan
             tray.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) ShowFromTray(); };
             // Clicks on the game don't reach WinForms, so close the tray menu when the window is activated
             Activated += (s, e) => trayMenu.Close();
+            tray.BalloonTipClicked += (s, e) => { if (balloonIsUpdate) { ShowFromTray(); if (panel == null || !panel.Visible) TogglePanel(); } };
+
+            Updater.CleanUp();
+            updateTimer.Tick += (s, e) =>
+            {
+                updateTimer.Interval = 6 * 60 * 60 * 1000;
+                if (settings.CheckUpdates) CheckForUpdates(false);
+            };
+            updateTimer.Start();
 
             Load += async (s, e) => await InitWebView();
             Resize += (s, e) => OnWindowStateChanged();
@@ -288,8 +303,8 @@ window.addEventListener('keydown', function(e){
                 if (!trayHintShown)
                 {
                     trayHintShown = true;
-                    tray.ShowBalloonTip(3000, Lang.T("Tenhou sigue abierto", "Tenhou is still running"),
-                        Lang.T("Haz clic en el ícono de la bandeja para volver.", "Click the tray icon to bring it back."), ToolTipIcon.Info);
+                    ShowBalloon(Lang.T("Tenhou sigue abierto", "Tenhou is still running"),
+                        Lang.T("Haz clic en el ícono de la bandeja para volver.", "Click the tray icon to bring it back."));
                 }
             }
             else if (WindowState != FormWindowState.Minimized)
@@ -311,8 +326,14 @@ window.addEventListener('keydown', function(e){
         {
             if (ActiveForm == this) return;
             if (Visible) Native.FlashUntilFocused(Handle);
-            else tray.ShowBalloonTip(5000, "Rinshan", Lang.T("Hay sonido en Tenhou: ¿empezó la partida?",
-                "Tenhou is playing a sound: has your game started?"), ToolTipIcon.Info);
+            else ShowBalloon("Rinshan", Lang.T("Hay sonido en Tenhou: ¿empezó la partida?",
+                "Tenhou is playing a sound: has your game started?"));
+        }
+
+        void ShowBalloon(string title, string text, bool isUpdate = false)
+        {
+            balloonIsUpdate = isUpdate;
+            tray.ShowBalloonTip(5000, title, text, ToolTipIcon.Info);
         }
 
         void UpdateKeepAwake()
@@ -416,6 +437,59 @@ window.addEventListener('keydown', function(e){
             }
             presence.Refresh();
             if (settings.DiscordEnabled) discord.Set(presence.Activity);
+        }
+
+        // ---- Updates ----
+
+        async void CheckForUpdates(bool manual)
+        {
+            if (updateStatus == "checking" || updateStatus == "installing") return;
+            var known = update;
+            updateStatus = "checking";
+            UpdatePanel();
+            try
+            {
+                update = await Updater.CheckAsync();
+                updateStatus = update != null ? "available" : "latest";
+            }
+            catch
+            {
+                // A failed background check (offline, GitHub down) just waits for the next one
+                updateStatus = manual ? "failed" : update != null ? "available" : "idle";
+            }
+            UpdatePanel();
+            bool isNew = update != null && (known == null || known.Version != update.Version);
+            if (isNew && !manual && (panel == null || !panel.Visible))
+                ShowBalloon(Lang.T("Hay una nueva versión de Rinshan", "A new version of Rinshan is available"),
+                    Lang.T("Abre el menú (F2) para actualizar a la v", "Open the menu (F2) to update to v") + Updater.Format(update.Version) + ".", true);
+        }
+
+        async void InstallUpdate()
+        {
+            if (update == null || updateStatus == "installing") return;
+            var answer = MessageBox.Show(panel != null && panel.Visible ? (IWin32Window)panel : this, Lang.T(
+                "Rinshan se cerrará para instalar la v" + Updater.Format(update.Version) + " y se abrirá de nuevo.\n\nSi estás en una partida, te desconectarás.",
+                "Rinshan will close to install v" + Updater.Format(update.Version) + " and open again.\n\nIf you're in a game, you'll be disconnected."),
+                "Rinshan", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+            if (answer != DialogResult.OK) return;
+
+            updateStatus = "installing";
+            UpdatePanel();
+            try
+            {
+                Program.RestartPath = await Updater.InstallAsync(update);
+                confirmedExit = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                updateStatus = "failed";
+                UpdatePanel();
+                MessageBox.Show(panel != null && panel.Visible ? (IWin32Window)panel : this, Lang.T(
+                    "No se pudo actualizar. Puedes descargar la nueva versión a mano desde GitHub.\n\n",
+                    "The update failed. You can download the new version by hand from GitHub.\n\n") + ex.Message,
+                    "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         // ---- Discord ----
@@ -525,7 +599,9 @@ window.addEventListener('keydown', function(e){
                 { "discord", settings.DiscordEnabled }, { "discordAppId", settings.DiscordAppId },
                 { "discordBuiltIn", BuiltInDiscordAppId.Length > 0 }, { "games", games },
                 { "lang", Lang.Code }, { "language", settings.Language }, { "translateTenhou", settings.TranslateTenhou },
-                { "reloadNeeded", tenhouReloadNeeded }
+                { "reloadNeeded", tenhouReloadNeeded },
+                { "version", Updater.CurrentText }, { "checkUpdates", settings.CheckUpdates }, { "updateStatus", updateStatus },
+                { "updateVersion", update != null ? Updater.Format(update.Version) : null }
             };
         }
 
@@ -559,7 +635,17 @@ window.addEventListener('keydown', function(e){
                         var _ = UpdateTranslateConfig();
                         tenhouReloadNeeded = true;
                     }
+                    else if ((string)value == "checkUpdates")
+                    {
+                        settings.CheckUpdates = !settings.CheckUpdates;
+                        if (settings.CheckUpdates) CheckForUpdates(false);
+                    }
                     break;
+                case "checkUpdates": CheckForUpdates(true); return;
+                case "installUpdate": InstallUpdate(); return;
+                case "releaseNotes":
+                    if (update != null) BrowserWindow.OpenExternal(update.PageUrl);
+                    return;
                 case "language":
                     msg.TryGetValue("value", out value);
                     SetLanguage(value as string);

@@ -1,0 +1,46 @@
+# Pushing a tag like v1.4.0 builds Rinshan and attaches the zip to a draft release with that tag.
+# Write the release notes on GitHub and publish it: the app's updater only sees published releases.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        shell: powershell
+        run: ./build.ps1
+
+      - name: Package
+        id: package
+        shell: powershell
+        run: ./tools/package.ps1
+
+      - name: Check the version matches the tag
+        shell: powershell
+        run: |
+          if ('v${{ steps.package.outputs.version }}' -ne '${{ github.ref_name }}') {
+            throw "Program.cs says v${{ steps.package.outputs.version }} but the tag is ${{ github.ref_name }}"
+          }
+
+      - name: Upload to the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag '${{ steps.package.outputs.zip }}' --clobber
+          } else {
+            gh release create $tag '${{ steps.package.outputs.zip }}' --draft --title "Rinshan $tag" --notes 'TODO: release notes'
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'gh failed' }

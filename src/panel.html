@@ -217,6 +217,7 @@
   }
   .notice.show { display: flex; }
   .notice span { flex: 1; color: var(--text); }
+  .notice.update { max-width: 980px; margin-bottom: 18px; }
 
   .toast {
     position: fixed; right: 22px; bottom: 22px; display: flex; align-items: center; gap: 8px;
@@ -248,6 +249,11 @@
   </aside>
 
   <main>
+    <div class="notice update" id="updateBanner">
+      <svg class="i" data-icon="download"></svg><span id="updateText"></span>
+      <button class="btn ghost sm" data-cmd="releaseNotes" data-i18n="releaseNotes"></button>
+      <button class="btn gold sm" data-cmd="installUpdate" id="installUpdate" data-i18n="installUpdate"></button>
+    </div>
     <section data-panel="games">
       <h1 data-i18n="navGames"></h1>
       <p class="sub" data-i18n="gamesSub"></p>
@@ -356,6 +362,19 @@
           <input type="checkbox" class="switch" id="panelOnTop" data-toggle="option:panelOnTop">
         </label>
       </div>
+      <h2 data-i18n="updatesHeader"></h2>
+      <div class="group">
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="download"></svg></div>
+          <div class="text"><b data-i18n="autoUpdateTitle"></b><span data-i18n="autoUpdateDesc"></span></div>
+          <input type="checkbox" class="switch" id="checkUpdates" data-toggle="option:checkUpdates">
+        </label>
+        <div class="setting">
+          <div class="icon"><svg class="i" data-icon="info"></svg></div>
+          <div class="text"><b id="versionTitle"></b><span id="updateStatus"></span></div>
+          <button class="btn ghost sm" data-cmd="checkUpdates" id="checkNow" data-i18n="checkNow"></button>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -383,7 +402,9 @@
     discord: '<path d="M8 4.5a15 15 0 0 0-3.5 1C2.5 9 2 12.5 2.3 16a14 14 0 0 0 4.4 2.3l1-1.6M16 4.5a15 15 0 0 1 3.5 1c2 3.5 2.5 7 2.2 10.5a14 14 0 0 1-4.4 2.3l-1-1.6"/><path d="M7 16.5c3.3 1.4 6.7 1.4 10 0"/><circle cx="9" cy="12" r="1.3"/><circle cx="15" cy="12" r="1.3"/>',
     key: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/>',
     globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
-    translate: '<path d="M4 5h8M8 3v2M6 5c0 4 2.5 7 6 8.5M10 5c-.5 3.5-3 6.5-6 8"/><path d="m13 21 4-9 4 9M14.5 18h5"/>'
+    translate: '<path d="M4 5h8M8 3v2M6 5c0 4 2.5 7 6 8.5M10 5c-.5 3.5-3 6.5-6 8"/><path d="m13 21 4-9 4 9M14.5 18h5"/>',
+    download: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
   };
 
   var STRINGS = {
@@ -417,6 +438,13 @@
       appIdNone: 'Créala en discord.com/developers/applications y pega aquí su Application ID.',
       thisWindowHeader: 'Esta ventana',
       onTopTitle: 'Mantener el menú siempre encima', onTopDesc: 'Útil si lo tienes al costado mientras juegas',
+      updatesHeader: 'Actualizaciones',
+      autoUpdateTitle: 'Buscar actualizaciones', autoUpdateDesc: 'Te avisa cuando sale una versión nueva. Nunca se instala sin preguntarte.',
+      checkNow: 'Buscar ahora', releaseNotes: 'Novedades', installUpdate: 'Actualizar y reiniciar',
+      updateIdle: 'Comprueba si hay una versión nueva', updateChecking: 'Buscando…', updateLatest: 'Tienes la última versión',
+      updateAvailable: 'La v{v} está disponible', updateInstalling: 'Descargando la v{v}…',
+      updateFailed: 'No se pudo conectar con GitHub. Revisa tu conexión.', updateInstallFailed: 'No se pudo instalar la v{v}. Inténtalo de nuevo o descárgala desde GitHub.',
+      bannerAvailable: 'Hay una nueva versión de Rinshan: v{v}. Se instala en segundos y conservas tu sesión y ajustes.',
       copied: 'Enlace copiado'
     },
     en: {
@@ -449,6 +477,13 @@
       appIdNone: 'Create one at discord.com/developers/applications and paste its Application ID here.',
       thisWindowHeader: 'This window',
       onTopTitle: 'Keep this menu on top', onTopDesc: 'Handy if you keep it beside the game',
+      updatesHeader: 'Updates',
+      autoUpdateTitle: 'Check for updates', autoUpdateDesc: 'Lets you know when a new version is out. Never installs without asking.',
+      checkNow: 'Check now', releaseNotes: "What's new", installUpdate: 'Update and restart',
+      updateIdle: 'Check whether a new version is out', updateChecking: 'Checking…', updateLatest: "You're on the latest version",
+      updateAvailable: 'v{v} is available', updateInstalling: 'Downloading v{v}…',
+      updateFailed: "Couldn't reach GitHub. Check your connection.", updateInstallFailed: "Couldn't install v{v}. Try again or download it from GitHub.",
+      bannerAvailable: 'A new version of Rinshan is out: v{v}. It installs in seconds and keeps your login and settings.',
       copied: 'Link copied'
     }
   };
@@ -563,6 +598,7 @@
       b.setAttribute('aria-pressed', b.dataset.lang == (s.language || 'auto'));
     });
     document.getElementById('reloadNotice').classList.toggle('show', !!s.reloadNeeded);
+    renderUpdate(s);
     var appId = document.getElementById('discordAppId');
     if (document.activeElement != appId) appId.value = s.discordAppId || '';
     document.getElementById('discordHint').textContent = t(s.discordAppId ? 'appIdOwn' : s.discordBuiltIn ? 'appIdBuiltIn' : 'appIdNone');
@@ -570,6 +606,23 @@
     document.getElementById('zoom').value = pct;
     document.getElementById('zoomValue').textContent = pct + '%';
     renderGames();
+  }
+
+  function renderUpdate(s) {
+    var status = s.updateStatus || 'idle', v = s.updateVersion;
+    function fill(key) { return t(key).replace('{v}', v); }
+    document.getElementById('checkUpdates').checked = !!s.checkUpdates;
+    document.getElementById('versionTitle').textContent = 'Rinshan v' + s.version;
+    document.getElementById('updateStatus').textContent = fill(
+      status == 'failed' ? (v ? 'updateInstallFailed' : 'updateFailed') :
+      'update' + status.charAt(0).toUpperCase() + status.slice(1));
+    document.getElementById('checkNow').disabled = status == 'checking' || status == 'installing';
+    var banner = document.getElementById('updateBanner');
+    banner.classList.toggle('show', !!v);
+    if (!v) return;
+    document.getElementById('updateText').textContent = fill(
+      status == 'installing' ? 'updateInstalling' : status == 'failed' ? 'updateInstallFailed' : 'bannerAvailable');
+    document.getElementById('installUpdate').disabled = status == 'installing';
   }
 
   var toastTimer;

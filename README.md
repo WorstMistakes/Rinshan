@@ -37,6 +37,7 @@
 - **Notifications**: if Tenhou plays a sound while you're in another window (e.g. a match starts), the taskbar button flashes.
 - **No accidents**: asks before closing so you don't disconnect from a game, and keeps the screen awake while you play.
 - **Single instance**: opening the shortcut again brings back the existing window.
+- **Updates itself**: when a new version is out, the menu offers to install it in a few seconds. It never updates without asking, and you can turn the check off in **F2 → Options**.
 - **Portable**: nothing to install; it's just a folder.
 
 ## Download
@@ -44,7 +45,7 @@
 1. Go to **[Releases](../../releases)** and download the latest `.zip`.
 2. Extract it anywhere and run `Rinshan.exe`.
 
-Upgrading from Tenhou Desktop? Just delete the old folder: your settings and Tenhou login move over the first time Rinshan starts.
+From v1.4.0 on, Rinshan updates itself from the F2 menu. Upgrading from Tenhou Desktop or Rinshan v1.3.0? Download the new zip once and delete the old folder: your settings and Tenhou login are kept.
 
 Requires **Windows 10 or 11**. It uses WebView2, the Microsoft Edge engine that ships with Windows.
 
@@ -78,13 +79,16 @@ No Visual Studio needed: it uses the .NET Framework compiler included with Windo
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-The first run downloads the WebView2 library from NuGet. Output goes to `dist\`.
+The first run downloads the WebView2 library from NuGet. Output goes to `dist\`, and `tools\package.ps1` zips it into `release\`.
+
+**Releasing:** bump `AssemblyVersion` in `src/Program.cs`, then push a matching tag (e.g. `v1.4.0`). GitHub Actions builds the zip and attaches it to a draft release; write the notes and publish it, and the app's updater picks it up.
 
 | Folder | Contents |
 |---|---|
 | `src/` | C# code (WinForms + WebView2), the menu (`panel.html`) and Tenhou's translations (`translate.js`) |
 | `assets/` | Icon and Discord image |
-| `tools/` | Scripts to regenerate the icon and screenshots |
+| `tools/` | Scripts to package a release and regenerate the icon and screenshots |
+| `.github/` | The release workflow |
 | `docs/` | README screenshots |
 
 ## License

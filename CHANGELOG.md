@@ -2,7 +2,7 @@
 
 What changed in each version of Rinshan. Downloads are on the [Releases](https://github.com/WorstMistakes/Rinshan/releases) page.
 
-## v1.5.0 — Unreleased
+## v1.5.0 — 2026-10-27
 
 - **Who's at your table**: the Games tab lists the players at your current or last table, with rank and rate, and opens their [Nodocchi](https://nodocchi.moe/) stats in one click. You can also look anyone up by name.
 - **Private lobbies**: save your friends' or club's lobbies (L1234) with a name and join them in one click. When you're in one, Rinshan offers to save it.

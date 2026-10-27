@@ -15,6 +15,49 @@
   if (code == 'ja' || code == 'jp') return;
   var col = code == 'es' ? 2 : code == 'pt' ? 3 : 1;
 
+  // Tenhou's own language files (res/lang/string…_xx.json, keyed by string id) get a few fixes as they
+  // load: mahjong terms in romaji like everywhere else, and Portuguese strings that are wrong or too long
+  // for their buttons. The language loaded for fallback (English) is patched the same way.
+  var TENHOU_ALL = { 150: 'Naki', 154: 'Ryuukyoku', 161: 'Tsumogiri' };
+  var TENHOU_LANG = {
+    pt: { 162: 'Escurecer', 164: 'Mão', 221: 'Espera', 222: 'Últimas', 276: 'INDISPONÍVEL', 282: 'Mensal', 284: 'Total' }
+  };
+  // Total stats columns: busted, win, deal-in, call and riichi rates
+  var TENHOU_STATS = { 4: 'Tobi<small>%</small>', 10: 'Agari<small>%</small>', 11: 'Houjuu<small>%</small>', 12: 'Naki<small>%</small>',
+    13: 'Riichi<small>%</small>' };
+  function patchStrings(lang, data) {
+    var own = TENHOU_LANG[lang] || {}, k;
+    for (k in TENHOU_ALL) if (k in data) data[k] = TENHOU_ALL[k];
+    for (k in own) if (k in data) data[k] = own[k];
+    if (Array.isArray(data[285])) for (k in TENHOU_STATS) data[285][k] = TENHOU_STATS[k];
+    // The Portuguese file has a few characters decoded twice ("â€¦" for "…", "â– " for "■")
+    if (lang == 'pt') for (k in data) if (typeof data[k] == 'string')
+      data[k] = data[k].replace(/â€¦/g, '…').replace(/â– ?/g, '■');
+    return data;
+  }
+  var xhrResponse = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'response');
+  var xhrText = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'responseText');
+  var xhrOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (method, url) {
+    var m = /\/res\/lang\/string\d+_([a-z]+)\.json/.exec(String(url));
+    if (m && (m[1] == 'en' || m[1] == 'es' || m[1] == 'pt') && xhrResponse && xhrText) {
+      var xhr = this, lang = m[1], patched;
+      var read = function (getter) {
+        return function () {
+          var raw = getter.call(xhr);
+          if (xhr.readyState != 4 || typeof raw != 'string' || !raw) return raw;
+          if (patched === undefined) {
+            try { patched = JSON.stringify(patchStrings(lang, JSON.parse(raw))); } catch (e) { patched = raw; }
+          }
+          return patched;
+        };
+      };
+      Object.defineProperty(this, 'response', { configurable: true, get: read(xhrResponse.get) });
+      Object.defineProperty(this, 'responseText', { configurable: true, get: read(xhrText.get) });
+    }
+    return xhrOpen.apply(this, arguments);
+  };
+
   var WORDS = [
     // Rooms and lobbies
     ['般', 'Ippan', 'Ippan', 'Ippan'], ['上', 'Joukyuu', 'Joukyuu', 'Joukyuu'], ['特', 'Tokujou', 'Tokujou', 'Tokujou'],
@@ -185,8 +228,9 @@
 
   // Lobby room codes, e.g. 四般東喰赤速: players, room, East/South, then kuitan, red fives, fast, chips.
   // In ranked rooms kuitan and red fives are the norm, so only their absence is spelled out.
-  // The room buttons only fit about a dozen letters, so with extras East/South shrink to E/S
-  function roomName(m, players, room, length, kui, aka, speed, chips) {
+  // The room buttons only fit about a dozen letters, so with extras East/South shrink to E/S, Tenhou's wide
+  // gap before the player count becomes one space, and longer names wrap onto two lines (see ROOM_CSS)
+  function roomName(m, players, room, length, kui, aka, speed, chips, gap) {
     var extras = [];
     if (!chips || chips.length == 1) {
       if (!kui) extras.push(pick('no-kui', 'sin kui', 'sem kui'));
@@ -198,11 +242,23 @@
     var south = length == '南';
     var parts = players == '三' ? ['3P'] : [];
     parts.push(ROOM[room], extras.length ? (south ? 'S' : 'E') : south ? pick('South', 'Sur', 'Sul') : pick('East', 'Este', 'Leste'));
-    return parts.concat(extras).join(' ');
+    return parts.concat(extras).join(' ') + (gap ? ' ' : '');
   }
 
+  // Two lines of the button's big text fit its height only with a tighter line height; the Join button
+  // next to it stays aligned to the top. The player count (.n2r) flows with its "N:" label, so a long
+  // name breaks before the count instead of in the middle of it.
+  var ROOM_CSS = 'button[name=rule]{line-height:1!important;vertical-align:top}.select-wrapper{vertical-align:top}' +
+    'button[name=rule] .n2r{display:inline!important;margin-left:.3em}';
+  function addRoomCss() {
+    var style = document.createElement('style');
+    style.textContent = ROOM_CSS;
+    (document.head || document.documentElement).appendChild(style);
+  }
+  if (document.head) addRoomCss(); else document.addEventListener('DOMContentLoaded', addRoomCss);
+
   var RULES = [
-    [/([三四])([般上特鳳若銀琥孔])([東南])(喰)?(赤)?(速|光)?(祝[０２５]?)?/g, roomName],
+    [/([三四])([般上特鳳若銀琥孔])([東南])(喰)?(赤)?(速|光)?(祝[０２５]?)?([　  ]+)?/g, roomName],
     [new RegExp('([東南西北])([1-4１-４])局', 'g'), function (m, w, n) { return WIND[w][col - 1] + ' ' + num(n); }],
     [new RegExp(D + '本場', 'g'), function (m, n) { return num(n) + ' honba'; }],
     [new RegExp(D + '巡目', 'g'), function (m, n) { return pick('Turn ', 'Turno ', 'Turno ') + num(n); }],

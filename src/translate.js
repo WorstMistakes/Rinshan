@@ -363,13 +363,29 @@
     if (RANK.test(t)) return translate(t.replace(/^初/, '一'));
     return null;
   }
+  // The table's boxes are sized for short Japanese ("新人" in the seat box is two kanji), so a translation
+  // may be at most a bit wider than two kanji or than the text it replaces: "5 kyu" fits as is, "Novato"
+  // is drawn slightly narrower, and measures that wide too.
+  var MAX_GROWTH = 1.15;
   var C2D = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
+  var measure = C2D && C2D.measureText;
   if (C2D) ['fillText', 'strokeText', 'measureText'].forEach(function (name) {
     var original = C2D[name];
     C2D[name] = function (text) {
       if (typeof text == 'string' && JAPANESE.test(text)) {
         var t = canvasText(text.trim());
-        if (t !== null) { var args = [].slice.call(arguments); args[0] = t; return original.apply(this, args); }
+        if (t !== null) {
+          var args = [].slice.call(arguments);
+          var limit = Math.max(measure.call(this, text).width, measure.call(this, '一二').width) * MAX_GROWTH;
+          args[0] = t;
+          if (name == 'measureText') {
+            var metrics = original.call(this, t);
+            if (metrics.width > limit) Object.defineProperty(metrics, 'width', { value: limit });
+            return metrics;
+          }
+          if (t && measure.call(this, t).width > limit) args[3] = Math.min(args.length > 3 ? args[3] : Infinity, limit);
+          return original.apply(this, args);
+        }
       }
       return original.apply(this, arguments);
     };

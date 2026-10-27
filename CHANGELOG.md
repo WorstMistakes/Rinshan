@@ -2,7 +2,7 @@
 
 What changed in each version of Rinshan. Downloads are on the [Releases](https://github.com/WorstMistakes/Rinshan/releases) page.
 
-## Unreleased
+## v1.5.1 — 2026-10-27
 
 - **Original Tenhou**: turning off **F2 → Options → Translate what Tenhou leaves in Japanese** now really shows Tenhou's own texts, untouched (switching it only took effect after restarting the app).
 - New option **Also change Tenhou's language**: turn it off to keep Rinshan's language apart from Tenhou's and pick Tenhou's in its own menu.

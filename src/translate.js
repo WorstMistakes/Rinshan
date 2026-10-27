@@ -54,7 +54,8 @@
     ['親', 'Dealer', 'Mano'], ['自家', 'You', 'Tú'], ['下家', 'Right', 'Derecha'], ['対面', 'Across', 'Enfrente'],
     ['上家', 'Left', 'Izquierda'], ['私', 'Me', 'Yo'], ['手牌', 'Hand', 'Mano'], ['副露', 'Calls', 'Llamadas'],
     ['河', 'Discards', 'Descartes'], ['ドラ', 'Dora', 'Dora'], ['裏ドラ', 'Ura dora', 'Ura dora'], ['赤ドラ', 'Red dora', 'Dora roja'],
-    ['明槓ドラ', 'Kan dora', 'Dora de kan'], ['明槓', 'Open kan', 'Kan abierto'], ['暗槓', 'Closed kan', 'Kan cerrado'],
+    ['明槓ドラ', 'Kan dora', 'Dora de kan'], ['明槓ドラ後', 'Kan dora after discard', 'Dora de kan tras descartar'],
+    ['後', ' after discard', ' tras descartar'], ['明槓', 'Open kan', 'Kan abierto'], ['暗槓', 'Closed kan', 'Kan cerrado'],
     ['暗', 'Closed', 'Cerrado'], ['門前', 'Closed hand', 'Mano cerrada'], ['榮和', 'Ron', 'Ron'],
     ['ツモ:', 'Tsumo:', 'Tsumo:'], ['ロン:', 'Ron:', 'Ron:'], ['放銃:', 'Dealt in:', 'Dio ron:'],
     ['ポン', 'Pon', 'Pon'], ['チー', 'Chii', 'Chii'], ['カン', 'Kan', 'Kan'], ['リーチ', 'Riichi', 'Riichi'],
@@ -152,20 +153,20 @@
 
   // Lobby room codes, e.g. 四般東喰赤速: players, room, East/South, then kuitan, red fives, fast, chips.
   // In ranked rooms kuitan and red fives are the norm, so only their absence is spelled out.
-  var roomTranslated = false;
+  // The room buttons only fit about a dozen letters, so with extras East/South shrink to E/S
   function roomName(m, players, room, length, kui, aka, speed, chips) {
-    roomTranslated = true;
-    var parts = [];
-    if (players == '三') parts.push('3P');
-    parts.push(ROOM[room], length == '南' ? pick('South', 'Sur') : pick('East', 'Este'));
+    var extras = [];
     if (!chips || chips.length == 1) {
-      if (!kui) parts.push(pick('no-kui', 'sin kui'));
-      if (!aka) parts.push(pick('no-red', 'sin rojos'));
+      if (!kui) extras.push(pick('no-kui', 'sin kui'));
+      if (!aka) extras.push(pick('no-red', 'sin rojos'));
     }
-    if (speed == '速') parts.push(pick('Fast', 'Rápido'));
-    if (speed == '光') parts.push('Hikari');
-    if (chips) parts.push(pick('Chips', 'Fichas') + (chips.length > 1 ? ' ' + num(chips.charAt(1)) : ''));
-    return parts.join(' ');
+    if (speed == '速') extras.push(pick('Fast', 'Rápido'));
+    if (speed == '光') extras.push('Hikari');
+    if (chips) extras.push(pick('Chips', 'Fichas') + (chips.length > 1 ? ' ' + num(chips.charAt(1)) : ''));
+    var south = length == '南';
+    var parts = players == '三' ? ['3P'] : [];
+    parts.push(ROOM[room], extras.length ? (south ? 'S' : 'E') : south ? pick('South', 'Sur') : pick('East', 'Este'));
+    return parts.concat(extras).join(' ');
   }
 
   var RULES = [
@@ -214,26 +215,8 @@
   function fixText(node) {
     var p = node.parentNode;
     if (p && SKIP[p.nodeName]) return;
-    roomTranslated = false;
     var v = node.nodeValue, t = translate(v);
     if (t !== v) node.nodeValue = t;
-    if (roomTranslated && p) fit(p);
-  }
-
-  // Room names are longer in English than in kanji: keep them on one line, shrinking the text a little
-  // if the room button is too narrow
-  function fit(el) {
-    requestAnimationFrame(function () {
-      var box = el;
-      while (box && box.nodeType == 1 && !box.clientWidth) box = box.parentElement;
-      if (!box || box.nodeType != 1) return;
-      box.style.whiteSpace = 'nowrap';
-      var size = parseFloat(getComputedStyle(box).fontSize), min = size * 0.65;
-      while (box.scrollWidth > box.clientWidth && size > min) {
-        size -= 1;
-        box.style.fontSize = size + 'px';
-      }
-    });
   }
   function fixAttrs(el) {
     ['placeholder', 'title'].forEach(function (a) {

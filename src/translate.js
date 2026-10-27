@@ -20,7 +20,10 @@
   // for their buttons. The language loaded for fallback (English) is patched the same way.
   var TENHOU_ALL = { 150: 'Naki', 154: 'Ryuukyoku', 161: 'Tsumogiri' };
   var TENHOU_LANG = {
-    pt: { 162: 'Escurecer', 164: 'Mão', 221: 'Espera', 222: 'Últimas', 276: 'INDISPONÍVEL', 282: 'Mensal', 284: 'Total' }
+    pt: { 162: 'Escurecer', 164: 'Mão', 218: 'Vence em', 221: 'Espera', 222: 'Últimas', 276: 'INDISPONÍVEL', 282: 'Mensal', 284: 'Total' },
+    // Spanish: the auto-win option overflowed its box (the other languages shrink it), plus typos
+    es: { 43: "<span style='font-size:75%;'>Ganar automático activado al empezar</span>", 21: '*Sólo para modo vertical',
+      28: 'Volumen', 225: 'No cumples los requisitos para jugar en 鳳凰 (Premium+ 七段R2000 o más)', 281: ['º', 'º', 'º', 'º'] }
   };
   // Total stats columns: busted, win, deal-in, call and riichi rates
   var TENHOU_STATS = { 4: 'Tobi<small>%</small>', 10: 'Agari<small>%</small>', 11: 'Houjuu<small>%</small>', 12: 'Naki<small>%</small>',
@@ -30,9 +33,19 @@
     for (k in TENHOU_ALL) if (k in data) data[k] = TENHOU_ALL[k];
     for (k in own) if (k in data) data[k] = own[k];
     if (Array.isArray(data[285])) for (k in TENHOU_STATS) data[285][k] = TENHOU_STATS[k];
+    // The stats tables are built from a template where "(", ")", "," and "|" are syntax. The Portuguese
+    // file has "Pontos<small>(méd.)</small>", which breaks the table and with it the settings screen.
+    [283, 285].forEach(function (id) {
+      if (Array.isArray(data[id])) data[id] = data[id].map(function (s) { return String(s).replace(/[(),|]/g, ' ').replace(/\s+/g, ' '); });
+    });
     // The Portuguese file has a few characters decoded twice ("â€¦" for "…", "â– " for "■")
     if (lang == 'pt') for (k in data) if (typeof data[k] == 'string')
       data[k] = data[k].replace(/â€¦/g, '…').replace(/â– ?/g, '■');
+    // Spanish writes ordinals with an acute accent ("1´") and has a few doubled letters
+    if (lang == 'es') for (k in data) {
+      if (typeof data[k] == 'string') data[k] = data[k].replace(/´/g, 'º').replace('vacíia', 'vacía').replace('paritdas', 'partidas').replace('versió\ton', 'versión');
+      else if (Array.isArray(data[k])) data[k] = data[k].map(function (s) { return String(s).replace(/´/g, 'º'); });
+    }
     return data;
   }
   var xhrResponse = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'response');

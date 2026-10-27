@@ -8,7 +8,9 @@ What changed in each version of Rinshan. Downloads are on the [Releases](https:/
 - **Private lobbies**: save your friends' or club's lobbies (L1234) with a name and join them in one click. When you're in one, Rinshan offers to save it.
 - **Lobby on Discord** (optional, off by default): shows the private lobby number with a *Join lobby* button for your friends.
 - **Screenshots with F12**: saved to `Pictures\Rinshan` and copied, ready to paste in Discord.
-- **Better Portuguese**: fixes Tenhou's own Portuguese texts that were wrong, too long or garbled ("Inativos", "Dados mensais", "â€¦"), and its in-game buttons and stats now use romaji too (Ryuukyoku, Tsumogiri, Naki, Agari%, Houjuu%).
+- **Tenhou in Portuguese works again**: Tenhou's own Portuguese file broke the stats tables, which left the monthly and total stats empty and crashed the settings screen. Rinshan now repairs it as it loads, and fixes its wrong, overlong or garbled texts ("Inativos", "Dados mensais", "â€¦").
+- **Spanish touch-ups**: the auto-win option fits its box, ordinals read 1º instead of 1´, and a few typos in Tenhou's Spanish are fixed.
+- **Romaji in Tenhou's own buttons and stats** too: Ryuukyoku, Tsumogiri, Naki, Agari%, Houjuu%.
 - **Room names fit**: long lobby room names now wrap neatly onto two lines instead of splitting the player count.
 - **App log**: Rinshan keeps a small `log.txt` (start, errors, updates, Tenhou not loading) to attach to bug reports. It never records your Tenhou ID. Open it from **F2 → Options → Help**.
 - **Report a problem** button in **F2 → Options → Help**, with GitHub forms for bugs and translations.

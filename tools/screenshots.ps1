@@ -1,4 +1,4 @@
-# Genera docs\*.png: el menú F2 con partidas de ejemplo, renderizado con Edge sin ventana.
+﻿# Genera docs\*.png: el menú F2 con partidas de ejemplo, renderizado con Edge sin ventana.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $docs = Join-Path $root 'docs'
@@ -7,14 +7,14 @@ $edge = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$en
     Where-Object { Test-Path $_ } | Select-Object -First 1
 
 $sample = @'
-render({muted:false, fullscreen:false, zoom:1, minimizeToTray:true, confirmClose:true, keepAwake:true, panelOnTop:false,
+render({lang:'en', language:'auto', translateTenhou:true, muted:false, fullscreen:false, zoom:1, minimizeToTray:true, confirmClose:true, keepAwake:true, panelOnTop:false,
   discord:true, discordAppId:'', discordBuiltIn:true, games:[
-  {id:'2026102621gm-00a9-0000-1f2e3d4c', when:'26/10 21:00', sanma:false, players:'4 jugadores'},
-  {id:'2026102620gm-00b9-0000-5a6b7c8d', when:'26/10 20:00', sanma:true,  players:'3 jugadores'},
-  {id:'2026102519gm-00a9-0000-9e8d7c6b', when:'25/10 19:00', sanma:false, players:'4 jugadores'},
-  {id:'2026102518gm-00a9-0000-1a2b3c4d', when:'25/10 18:00', sanma:false, players:'4 jugadores'},
-  {id:'2026102422gm-00a9-0000-4d3c2b1a', when:'24/10 22:00', sanma:false, players:'4 jugadores'},
-  {id:'2026102421gm-00a9-0000-0f1e2d3c', when:'24/10 21:00', sanma:false, players:'4 jugadores'}]});
+  {id:'2026102621gm-00a9-0000-1f2e3d4c', when:'26/10 21:00', sanma:false, players:'4 players'},
+  {id:'2026102620gm-00b9-0000-5a6b7c8d', when:'26/10 20:00', sanma:true,  players:'3 players'},
+  {id:'2026102519gm-00a9-0000-9e8d7c6b', when:'25/10 19:00', sanma:false, players:'4 players'},
+  {id:'2026102518gm-00a9-0000-1a2b3c4d', when:'25/10 18:00', sanma:false, players:'4 players'},
+  {id:'2026102422gm-00a9-0000-4d3c2b1a', when:'24/10 22:00', sanma:false, players:'4 players'},
+  {id:'2026102421gm-00a9-0000-0f1e2d3c', when:'24/10 21:00', sanma:false, players:'4 players'}]});
 '@
 $html = Get-Content (Join-Path $root 'src\panel.html') -Raw -Encoding UTF8
 

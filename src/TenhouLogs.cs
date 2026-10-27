@@ -42,7 +42,12 @@ namespace TenhouDesktop
 
         public string Label
         {
-            get { return When + "  ·  " + (IsSanma ? "3 jugadores" : "4 jugadores"); }
+            get { return When + "  ·  " + Players; }
+        }
+
+        public string Players
+        {
+            get { return IsSanma ? Lang.T("3 jugadores", "3 players") : Lang.T("4 jugadores", "4 players"); }
         }
     }
 

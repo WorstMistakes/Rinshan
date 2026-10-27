@@ -59,17 +59,19 @@ namespace TenhouDesktop
             var bar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, RenderMode = ToolStripRenderMode.System };
             if (fillValue != null)
             {
-                bar.Items.Add(new ToolStripLabel("Partida: " + fillValue));
-                bar.Items.Add(new ToolStripButton("Copiar enlace", null, (s, e) => Clipboard.SetText(fillValue)));
+                bar.Items.Add(new ToolStripLabel(Lang.T("Partida: ", "Game: ") + fillValue));
+                bar.Items.Add(new ToolStripButton(Lang.T("Copiar enlace", "Copy link"), null, (s, e) => Clipboard.SetText(fillValue)));
             }
-            bar.Items.Add(new ToolStripButton("Abrir en el navegador", null, (s, e) =>
+            bar.Items.Add(new ToolStripButton(Lang.T("Abrir en el navegador", "Open in browser"), null, (s, e) =>
             {
                 var current = web.Source != null ? web.Source.ToString() : startUrl;
                 if (fillValue != null) Clipboard.SetText(fillValue);
                 OpenExternal(current);
             }));
             if (fillValue != null)
-                bar.Items.Add(new ToolStripLabel("El enlace se pega solo. Revisa que sea la partida correcta y pulsa el botón de la página.")
+                bar.Items.Add(new ToolStripLabel(Lang.T(
+                    "El enlace se pega solo. Revisa que sea la partida correcta y pulsa el botón de la página.",
+                    "The link is pasted for you. Check it's the right game, then press the button on the page."))
                     { ForeColor = SystemColors.GrayText });
 
             web.Dock = DockStyle.Fill;

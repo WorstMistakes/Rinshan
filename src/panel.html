@@ -202,6 +202,22 @@
   }
   .appid input:focus { outline: none; border-color: var(--gold); }
 
+  .segmented { display: flex; padding: 3px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+  .segmented button {
+    padding: 6px 12px; border: 0; border-radius: 7px; background: none; cursor: pointer;
+    color: var(--muted); font-family: inherit; font-size: 12.5px; font-weight: 600; white-space: nowrap;
+  }
+  .segmented button:hover { color: var(--text); }
+  .segmented button[aria-pressed="true"] { color: var(--gold-ink); background: linear-gradient(180deg, var(--gold), var(--gold-2)); }
+
+  .notice {
+    display: none; align-items: center; gap: 12px; margin-bottom: 4px;
+    padding: 12px 14px 12px 16px; border-radius: 12px; color: var(--gold);
+    background: rgba(230, 195, 106, .08); border: 1px solid rgba(230, 195, 106, .35);
+  }
+  .notice.show { display: flex; }
+  .notice span { flex: 1; color: var(--text); }
+
   .toast {
     position: fixed; right: 22px; bottom: 22px; display: flex; align-items: center; gap: 8px;
     padding: 10px 16px; border-radius: 12px; font-weight: 600;
@@ -218,48 +234,48 @@
       <div class="logo">天</div>
       <div><b>Tenhou</b><small>Desktop</small></div>
     </div>
-    <button class="nav" role="tab" data-tab="games"><svg class="i" data-icon="list"></svg>Partidas</button>
-    <button class="nav" role="tab" data-tab="display"><svg class="i" data-icon="volume"></svg>Sonido y pantalla</button>
-    <button class="nav" role="tab" data-tab="options"><svg class="i" data-icon="sliders"></svg>Opciones</button>
+    <button class="nav" role="tab" data-tab="games"><svg class="i" data-icon="list"></svg><span data-i18n="navGames"></span></button>
+    <button class="nav" role="tab" data-tab="display"><svg class="i" data-icon="volume"></svg><span data-i18n="navDisplay"></span></button>
+    <button class="nav" role="tab" data-tab="options"><svg class="i" data-icon="sliders"></svg><span data-i18n="navOptions"></span></button>
     <div class="spacer"></div>
     <div class="keys">
-      <kbd>F2</kbd><span>Abrir / cerrar menú</span>
-      <kbd>F11</kbd><span>Pantalla completa</span>
-      <kbd>Ctrl M</kbd><span>Silenciar</span>
-      <kbd>Esc</kbd><span>Ocultar menú</span>
+      <kbd>F2</kbd><span data-i18n="keyMenu"></span>
+      <kbd>F11</kbd><span data-i18n="keyFullscreen"></span>
+      <kbd>Ctrl M</kbd><span data-i18n="keyMute"></span>
+      <kbd>Esc</kbd><span data-i18n="keyHide"></span>
     </div>
-    <button class="exit" data-cmd="exit"><svg class="i" data-icon="logout"></svg>Salir de Tenhou</button>
+    <button class="exit" data-cmd="exit"><svg class="i" data-icon="logout"></svg><span data-i18n="exit"></span></button>
   </aside>
 
   <main>
     <section data-panel="games">
-      <h1>Partidas</h1>
-      <p class="sub">Revisa tus partidas recientes o mándalas a analizar. El enlace se pega solo, pero tú decides cuándo enviarlo.</p>
+      <h1 data-i18n="navGames"></h1>
+      <p class="sub" data-i18n="gamesSub"></p>
       <div id="hero"></div>
       <div class="tools">
-        <button class="btn ghost sm" data-cmd="clipboardReplay"><svg class="i" data-icon="clipboard"></svg>Abrir replay copiado</button>
+        <button class="btn ghost sm" data-cmd="clipboardReplay"><svg class="i" data-icon="clipboard"></svg><span data-i18n="openCopied"></span></button>
       </div>
-      <h2>Historial</h2>
+      <h2 data-i18n="history"></h2>
       <div class="list" id="history"></div>
     </section>
 
     <section data-panel="display">
-      <h1>Sonido y pantalla</h1>
-      <p class="sub">Ajusta cómo se ve y se escucha Tenhou.</p>
+      <h1 data-i18n="navDisplay"></h1>
+      <p class="sub" data-i18n="displaySub"></p>
       <div class="group">
         <label class="setting">
           <div class="icon"><svg class="i" data-icon="volume"></svg></div>
-          <div class="text"><b>Silenciar Tenhou</b><span>Corta el sonido solo de Tenhou · Ctrl+M</span></div>
+          <div class="text"><b data-i18n="muteTitle"></b><span data-i18n="muteDesc"></span></div>
           <input type="checkbox" class="switch" id="muted" data-toggle="mute">
         </label>
         <label class="setting">
           <div class="icon"><svg class="i" data-icon="maximize"></svg></div>
-          <div class="text"><b>Pantalla completa</b><span>Sin bordes ni barra de título · F11</span></div>
+          <div class="text"><b data-i18n="keyFullscreen"></b><span data-i18n="fullscreenDesc"></span></div>
           <input type="checkbox" class="switch" id="fullscreen" data-toggle="fullscreen">
         </label>
         <div class="setting">
           <div class="icon"><svg class="i" data-icon="zoom"></svg></div>
-          <div class="text"><b>Zoom</b><span>También con Ctrl + rueda del mouse · Ctrl+0 restablece</span></div>
+          <div class="text"><b>Zoom</b><span data-i18n="zoomDesc"></span></div>
           <div class="zoom">
             <input type="range" id="zoom" min="50" max="200" step="5">
             <output id="zoomValue">100%</output>
@@ -268,30 +284,51 @@
         </div>
         <div class="setting">
           <div class="icon"><svg class="i" data-icon="refresh"></svg></div>
-          <div class="text"><b>Recargar Tenhou</b><span>Si algo se traba · F5</span></div>
-          <button class="btn ghost sm" data-cmd="reload">Recargar</button>
+          <div class="text"><b data-i18n="reloadTitle"></b><span data-i18n="reloadDesc"></span></div>
+          <button class="btn ghost sm" data-cmd="reload" data-i18n="reload"></button>
         </div>
       </div>
     </section>
 
     <section data-panel="options">
-      <h1>Opciones</h1>
-      <p class="sub">Cómo se comporta la app en tu escritorio.</p>
-      <h2>Ventana de Tenhou</h2>
+      <h1 data-i18n="navOptions"></h1>
+      <p class="sub" data-i18n="optionsSub"></p>
+      <div class="notice" id="reloadNotice">
+        <svg class="i" data-icon="refresh"></svg><span data-i18n="reloadNotice"></span>
+        <button class="btn gold sm" data-cmd="reload" data-i18n="reload"></button>
+      </div>
+      <h2 data-i18n="languageHeader"></h2>
+      <div class="group">
+        <div class="setting">
+          <div class="icon"><svg class="i" data-icon="globe"></svg></div>
+          <div class="text"><b data-i18n="languageTitle"></b><span data-i18n="languageDesc"></span></div>
+          <div class="segmented" id="language">
+            <button data-lang="auto" data-i18n="languageAuto"></button>
+            <button data-lang="es">Español</button>
+            <button data-lang="en">English</button>
+          </div>
+        </div>
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="translate"></svg></div>
+          <div class="text"><b data-i18n="translateTitle"></b><span data-i18n="translateDesc"></span></div>
+          <input type="checkbox" class="switch" id="translateTenhou" data-toggle="option:translateTenhou">
+        </label>
+      </div>
+      <h2 data-i18n="windowHeader"></h2>
       <div class="group">
         <label class="setting">
           <div class="icon"><svg class="i" data-icon="tray"></svg></div>
-          <div class="text"><b>Minimizar a la bandeja</b><span>Al minimizar, Tenhou se esconde junto al reloj</span></div>
+          <div class="text"><b data-i18n="trayTitle"></b><span data-i18n="trayDesc"></span></div>
           <input type="checkbox" class="switch" id="minimizeToTray" data-toggle="option:minimizeToTray">
         </label>
         <label class="setting">
           <div class="icon"><svg class="i" data-icon="shield"></svg></div>
-          <div class="text"><b>Confirmar antes de cerrar</b><span>Evita desconectarte de una partida por accidente</span></div>
+          <div class="text"><b data-i18n="confirmTitle"></b><span data-i18n="confirmDesc"></span></div>
           <input type="checkbox" class="switch" id="confirmClose" data-toggle="option:confirmClose">
         </label>
         <label class="setting">
           <div class="icon"><svg class="i" data-icon="sun"></svg></div>
-          <div class="text"><b>Mantener la pantalla encendida</b><span>Mientras la ventana de Tenhou está visible</span></div>
+          <div class="text"><b data-i18n="awakeTitle"></b><span data-i18n="awakeDesc"></span></div>
           <input type="checkbox" class="switch" id="keepAwake" data-toggle="option:keepAwake">
         </label>
       </div>
@@ -299,30 +336,30 @@
       <div class="group">
         <label class="setting">
           <div class="icon"><svg class="i" data-icon="discord"></svg></div>
-          <div class="text"><b>Mostrar en Discord</b><span>Lobby, buscando partida, sala, ronda y puesto, como hace osu!</span></div>
+          <div class="text"><b data-i18n="discordTitle"></b><span data-i18n="discordDesc"></span></div>
           <input type="checkbox" class="switch" id="discord" data-toggle="option:discord">
         </label>
         <div class="setting">
           <div class="icon"><svg class="i" data-icon="key"></svg></div>
-          <div class="text"><b>ID de aplicación de Discord (avanzado)</b><span id="discordHint"></span></div>
+          <div class="text"><b data-i18n="appIdTitle"></b><span id="discordHint"></span></div>
           <div class="appid">
             <input type="text" id="discordAppId" placeholder="123456789012345678" inputmode="numeric" spellcheck="false">
-            <button class="btn ghost sm" id="discordSave">Guardar</button>
+            <button class="btn ghost sm" id="discordSave" data-i18n="save"></button>
           </div>
         </div>
       </div>
-      <h2>Esta ventana</h2>
+      <h2 data-i18n="thisWindowHeader"></h2>
       <div class="group">
         <label class="setting">
           <div class="icon"><svg class="i" data-icon="pin"></svg></div>
-          <div class="text"><b>Mantener el menú siempre encima</b><span>Útil si lo tienes al costado mientras juegas</span></div>
+          <div class="text"><b data-i18n="onTopTitle"></b><span data-i18n="onTopDesc"></span></div>
           <input type="checkbox" class="switch" id="panelOnTop" data-toggle="option:panelOnTop">
         </label>
       </div>
     </section>
   </main>
 
-  <div class="toast" id="toast"><svg class="i" data-icon="check"></svg>Enlace copiado</div>
+  <div class="toast" id="toast"><svg class="i" data-icon="check"></svg><span data-i18n="copied"></span></div>
 
 <script>
   var ICONS = {
@@ -344,8 +381,83 @@
     pin: '<path d="M12 17v5"/><path d="M9 3h6l-1 7 4 4H6l4-4z"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
     discord: '<path d="M8 4.5a15 15 0 0 0-3.5 1C2.5 9 2 12.5 2.3 16a14 14 0 0 0 4.4 2.3l1-1.6M16 4.5a15 15 0 0 1 3.5 1c2 3.5 2.5 7 2.2 10.5a14 14 0 0 1-4.4 2.3l-1-1.6"/><path d="M7 16.5c3.3 1.4 6.7 1.4 10 0"/><circle cx="9" cy="12" r="1.3"/><circle cx="15" cy="12" r="1.3"/>',
-    key: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/>'
+    key: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M17 6l3 3M14.5 8.5l2 2"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    translate: '<path d="M4 5h8M8 3v2M6 5c0 4 2.5 7 6 8.5M10 5c-.5 3.5-3 6.5-6 8"/><path d="m13 21 4-9 4 9M14.5 18h5"/>'
   };
+
+  var STRINGS = {
+    es: {
+      navGames: 'Partidas', navDisplay: 'Sonido y pantalla', navOptions: 'Opciones',
+      keyMenu: 'Abrir / cerrar menú', keyFullscreen: 'Pantalla completa', keyMute: 'Silenciar', keyHide: 'Ocultar menú',
+      exit: 'Salir de Tenhou',
+      gamesSub: 'Revisa tus partidas recientes o mándalas a analizar. El enlace se pega solo, pero tú decides cuándo enviarlo.',
+      openCopied: 'Abrir replay copiado', history: 'Historial',
+      noGames: 'Todavía no hay partidas', noGamesDesc: 'Aparecerán aquí cuando termines tu primera partida en la app.',
+      lastGame: 'Última partida', mortal: 'Analizar con Mortal', naga: 'Analizar con NAGA', watch: 'Ver replay',
+      replay: 'Replay', copy: 'Copiar', only4p: 'solo 4p', credits: 'créditos',
+      nagaSanma: 'NAGA solo analiza partidas de 4 jugadores', nagaCredits: 'Usa créditos de NAGA. El enlace se pega pero no se envía.',
+      displaySub: 'Ajusta cómo se ve y se escucha Tenhou.',
+      muteTitle: 'Silenciar Tenhou', muteDesc: 'Corta el sonido solo de Tenhou · Ctrl+M',
+      fullscreenDesc: 'Sin bordes ni barra de título · F11', zoomDesc: 'También con Ctrl + rueda del mouse · Ctrl+0 restablece',
+      reloadTitle: 'Recargar Tenhou', reloadDesc: 'Si algo se traba · F5', reload: 'Recargar',
+      optionsSub: 'Cómo se comporta la app en tu escritorio.',
+      reloadNotice: 'Recarga Tenhou para aplicar el cambio. Mejor hazlo fuera de una partida.',
+      languageHeader: 'Idioma', languageTitle: 'Idioma de la app y de Tenhou', languageDesc: 'Automático sigue el idioma de Windows',
+      languageAuto: 'Automático',
+      translateTitle: 'Traducir lo que Tenhou deja en japonés', translateDesc: 'Salas, reglas, rangos, yakus y menús',
+      windowHeader: 'Ventana de Tenhou',
+      trayTitle: 'Minimizar a la bandeja', trayDesc: 'Al minimizar, Tenhou se esconde junto al reloj',
+      confirmTitle: 'Confirmar antes de cerrar', confirmDesc: 'Evita desconectarte de una partida por accidente',
+      awakeTitle: 'Mantener la pantalla encendida', awakeDesc: 'Mientras la ventana de Tenhou está visible',
+      discordTitle: 'Mostrar en Discord', discordDesc: 'Lobby, buscando partida, sala, ronda y puesto, como hace osu!',
+      appIdTitle: 'ID de aplicación de Discord (avanzado)', save: 'Guardar',
+      appIdOwn: 'Usando tu propio ID. Bórralo y guarda para volver al de la app.',
+      appIdBuiltIn: 'Opcional: la app ya trae uno. Discord tiene que estar abierto en esta PC.',
+      appIdNone: 'Créala en discord.com/developers/applications y pega aquí su Application ID.',
+      thisWindowHeader: 'Esta ventana',
+      onTopTitle: 'Mantener el menú siempre encima', onTopDesc: 'Útil si lo tienes al costado mientras juegas',
+      copied: 'Enlace copiado'
+    },
+    en: {
+      navGames: 'Games', navDisplay: 'Sound & display', navOptions: 'Options',
+      keyMenu: 'Open / close menu', keyFullscreen: 'Fullscreen', keyMute: 'Mute', keyHide: 'Hide menu',
+      exit: 'Quit Tenhou',
+      gamesSub: 'Look back at your recent games or send them for review. The link is pasted for you, but you decide when to submit it.',
+      openCopied: 'Open copied replay', history: 'History',
+      noGames: 'No games yet', noGamesDesc: 'They will show up here after you finish your first game in the app.',
+      lastGame: 'Last game', mortal: 'Review with Mortal', naga: 'Review with NAGA', watch: 'Watch replay',
+      replay: 'Replay', copy: 'Copy', only4p: '4p only', credits: 'credits',
+      nagaSanma: 'NAGA only reviews 4-player games', nagaCredits: 'Uses NAGA credits. The link is pasted but not submitted.',
+      displaySub: 'Adjust how Tenhou looks and sounds.',
+      muteTitle: 'Mute Tenhou', muteDesc: 'Mutes Tenhou only · Ctrl+M',
+      fullscreenDesc: 'No borders or title bar · F11', zoomDesc: 'Also with Ctrl + mouse wheel · Ctrl+0 resets',
+      reloadTitle: 'Reload Tenhou', reloadDesc: 'If something gets stuck · F5', reload: 'Reload',
+      optionsSub: 'How the app behaves on your desktop.',
+      reloadNotice: 'Reload Tenhou to apply the change. Best done outside a game.',
+      languageHeader: 'Language', languageTitle: 'App and Tenhou language', languageDesc: 'Automatic follows your Windows language',
+      languageAuto: 'Automatic',
+      translateTitle: 'Translate what Tenhou leaves in Japanese', translateDesc: 'Rooms, rules, ranks, yaku and menus',
+      windowHeader: 'Tenhou window',
+      trayTitle: 'Minimize to tray', trayDesc: 'When minimized, Tenhou hides next to the clock',
+      confirmTitle: 'Confirm before closing', confirmDesc: 'Avoids leaving a game by accident',
+      awakeTitle: 'Keep the screen on', awakeDesc: 'While the Tenhou window is visible',
+      discordTitle: 'Show on Discord', discordDesc: 'Lobby, matchmaking, room, round and placement, like osu!',
+      appIdTitle: 'Discord application ID (advanced)', save: 'Save',
+      appIdOwn: 'Using your own ID. Clear it and save to go back to the built-in one.',
+      appIdBuiltIn: 'Optional: the app already includes one. Discord must be running on this PC.',
+      appIdNone: 'Create one at discord.com/developers/applications and paste its Application ID here.',
+      thisWindowHeader: 'This window',
+      onTopTitle: 'Keep this menu on top', onTopDesc: 'Handy if you keep it beside the game',
+      copied: 'Link copied'
+    }
+  };
+  var lang = 'es';
+  function t(key) { return STRINGS[lang][key]; }
+  function applyStrings() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.dataset.i18n); });
+  }
   function icon(name) {
     return '<svg class="i" viewBox="0 0 24 24">' + ICONS[name] + '</svg>';
   }
@@ -383,7 +495,7 @@
   }
 
   function nagaTitle(g) {
-    return g.sanma ? 'NAGA solo analiza partidas de 4 jugadores' : 'Usa créditos de NAGA. El enlace se pega pero no se envía.';
+    return g.sanma ? t('nagaSanma') : t('nagaCredits');
   }
 
   function selectTab(name) {
@@ -399,8 +511,8 @@
 
     if (!state.games.length) {
       var empty = el('div', 'empty');
-      empty.appendChild(el('b', null, 'Todavía no hay partidas'));
-      empty.appendChild(document.createTextNode('Aparecerán aquí cuando termines tu primera partida en la app.'));
+      empty.appendChild(el('b', null, t('noGames')));
+      empty.appendChild(document.createTextNode(t('noGamesDesc')));
       hero.appendChild(empty);
       return;
     }
@@ -408,7 +520,7 @@
     var g = state.games[0];
     var card = el('div', 'hero');
     var info = el('div', 'info');
-    info.appendChild(el('div', 'eyebrow', 'Última partida'));
+    info.appendChild(el('div', 'eyebrow', t('lastGame')));
     info.appendChild(el('div', 'when', g.when));
     var chips = el('div', 'chips');
     chips.appendChild(el('span', 'chip', g.players));
@@ -417,11 +529,11 @@
     card.appendChild(info);
 
     var actions = el('div', 'actions');
-    actions.appendChild(button('Analizar con Mortal', 'gold', 'spark', function () { send('review', { service: 'mortal', id: g.id }); }));
-    var naga = button('Analizar con NAGA', 'violet', 'brain', function () { send('review', { service: 'naga', id: g.id }); }, g.sanma, nagaTitle(g));
-    naga.appendChild(el('span', 'badge', g.sanma ? 'solo 4p' : 'créditos'));
+    actions.appendChild(button(t('mortal'), 'gold', 'spark', function () { send('review', { service: 'mortal', id: g.id }); }));
+    var naga = button(t('naga'), 'violet', 'brain', function () { send('review', { service: 'naga', id: g.id }); }, g.sanma, nagaTitle(g));
+    naga.appendChild(el('span', 'badge', g.sanma ? t('only4p') : t('credits')));
     actions.appendChild(naga);
-    actions.appendChild(button('Ver replay', 'ghost', 'play', function () { send('replay', { id: g.id }); }));
+    actions.appendChild(button(t('watch'), 'ghost', 'play', function () { send('replay', { id: g.id }); }));
     card.appendChild(actions);
     hero.appendChild(card);
 
@@ -432,10 +544,10 @@
       meta.appendChild(el('span', 'chip', g.players));
       row.appendChild(meta);
       var acts = el('div', 'actions');
-      acts.appendChild(button('Replay', 'ghost sm', 'play', function () { send('replay', { id: g.id }); }));
+      acts.appendChild(button(t('replay'), 'ghost sm', 'play', function () { send('replay', { id: g.id }); }));
       acts.appendChild(button('Mortal', 'ghost sm', 'spark', function () { send('review', { service: 'mortal', id: g.id }); }));
       acts.appendChild(button('NAGA', 'violet sm', 'brain', function () { send('review', { service: 'naga', id: g.id }); }, g.sanma, nagaTitle(g)));
-      acts.appendChild(button('Copiar', 'ghost sm', 'copy', function () { send('copy', { id: g.id }); toast(); }));
+      acts.appendChild(button(t('copy'), 'ghost sm', 'copy', function () { send('copy', { id: g.id }); toast(); }));
       row.appendChild(acts);
       history.appendChild(row);
     });
@@ -443,16 +555,17 @@
 
   function render(s) {
     state = s;
-    ['muted', 'fullscreen', 'minimizeToTray', 'confirmClose', 'keepAwake', 'panelOnTop', 'discord'].forEach(function (id) {
+    if (s.lang && s.lang != lang && STRINGS[s.lang]) { lang = s.lang; applyStrings(); }
+    ['muted', 'fullscreen', 'minimizeToTray', 'confirmClose', 'keepAwake', 'panelOnTop', 'discord', 'translateTenhou'].forEach(function (id) {
       document.getElementById(id).checked = !!s[id];
     });
+    document.querySelectorAll('#language button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.lang == (s.language || 'auto'));
+    });
+    document.getElementById('reloadNotice').classList.toggle('show', !!s.reloadNeeded);
     var appId = document.getElementById('discordAppId');
     if (document.activeElement != appId) appId.value = s.discordAppId || '';
-    document.getElementById('discordHint').textContent = s.discordAppId
-      ? 'Usando tu propio ID. Bórralo y guarda para volver al de la app.'
-      : s.discordBuiltIn
-        ? 'Opcional: la app ya trae uno. Discord tiene que estar abierto en esta PC.'
-        : 'Créala en discord.com/developers/applications y pega aquí su Application ID.';
+    document.getElementById('discordHint').textContent = t(s.discordAppId ? 'appIdOwn' : s.discordBuiltIn ? 'appIdBuiltIn' : 'appIdNone');
     var pct = Math.round((s.zoom || 1) * 100);
     document.getElementById('zoom').value = pct;
     document.getElementById('zoomValue').textContent = pct + '%';
@@ -468,6 +581,10 @@
   }
 
   hydrateIcons(document);
+  applyStrings();
+  document.querySelectorAll('#language button').forEach(function (b) {
+    b.onclick = function () { send('language', { value: b.dataset.lang }); };
+  });
   document.querySelectorAll('.nav').forEach(function (t) { t.onclick = function () { selectTab(t.dataset.tab); }; });
   document.querySelectorAll('[data-cmd]').forEach(function (b) { b.onclick = function () { send(b.dataset.cmd); }; });
   document.querySelectorAll('[data-toggle]').forEach(function (c) {

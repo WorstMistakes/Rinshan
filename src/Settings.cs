@@ -21,6 +21,8 @@ namespace TenhouDesktop
         public bool PanelOnTop = false;
         public bool DiscordEnabled = true;
         public string DiscordAppId = "";
+        public string Language = "auto";    // auto, es or en
+        public bool TranslateTenhou = true;
 
         readonly string path;
 
@@ -54,6 +56,10 @@ namespace TenhouDesktop
             PanelOnTop = ReadBool(values, "panelontop", PanelOnTop);
             DiscordEnabled = ReadBool(values, "discord", DiscordEnabled);
             if (values.TryGetValue("discordappid", out s)) DiscordAppId = s;
+            if (values.TryGetValue("language", out s) && (s == "auto" || s == "es" || s == "en")) Language = s;
+            // Settings from before 1.2 have no language: those versions were Spanish only, so stay in Spanish
+            else if (!values.ContainsKey("language")) Language = "es";
+            TranslateTenhou = ReadBool(values, "translatetenhou", TranslateTenhou);
         }
 
         static bool ReadRect(Dictionary<string, string> values, string prefix, out Rectangle rect)
@@ -92,7 +98,9 @@ namespace TenhouDesktop
                 "panelwidth=" + PanelBounds.Width, "panelheight=" + PanelBounds.Height,
                 "panelontop=" + PanelOnTop,
                 "discord=" + DiscordEnabled,
-                "discordappid=" + DiscordAppId
+                "discordappid=" + DiscordAppId,
+                "language=" + Language,
+                "translatetenhou=" + TranslateTenhou
             });
         }
     }

@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Windows.Forms;
 
 [assembly: System.Reflection.AssemblyTitle("Tenhou Desktop")]
 [assembly: System.Reflection.AssemblyProduct("Tenhou Desktop")]
-[assembly: System.Reflection.AssemblyVersion("1.1.0.0")]
+[assembly: System.Reflection.AssemblyVersion("1.2.0.0")]
 
 namespace TenhouDesktop
 {
@@ -44,6 +44,14 @@ namespace TenhouDesktop
 
                 Application.Run(form);
             }
+        }
+
+        // Files embedded with /resource in build.ps1 (panel.html, translate.js)
+        public static string LoadResource(string name)
+        {
+            using (var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
+            using (var reader = new System.IO.StreamReader(stream))
+                return reader.ReadToEnd();
         }
     }
 }

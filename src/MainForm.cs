@@ -24,6 +24,11 @@ namespace TenhouDesktop
         readonly string dataDir;
         readonly NotifyIcon tray = new NotifyIcon();
         readonly ContextMenuStrip trayMenu = new ContextMenuStrip();
+        readonly ToolStripMenuItem trayShow = new ToolStripMenuItem();
+        readonly ToolStripMenuItem trayOpenMenu = new ToolStripMenuItem();
+        readonly ToolStripMenuItem trayExit = new ToolStripMenuItem();
+        string translateConfigScriptId;
+        bool tenhouReloadNeeded;   // a language or translation change waits for Tenhou to reload
         CoreWebView2Environment env;
         MenuPanel panel;
         readonly DiscordPresence discord = new DiscordPresence();
@@ -43,6 +48,7 @@ namespace TenhouDesktop
             Directory.CreateDirectory(dataDir);
             settings = new Settings(Path.Combine(dataDir, "settings.ini"));
             try { settings.Load(); } catch { }
+            Lang.Set(settings.Language);
 
             Text = "Tenhou";
             BackColor = Color.Black;
@@ -56,13 +62,13 @@ namespace TenhouDesktop
             web.DefaultBackgroundColor = Color.Black;
             Controls.Add(web);
 
-            var show = new ToolStripMenuItem("Mostrar Tenhou", null, (s, e) => ShowFromTray());
-            show.Font = new Font(show.Font, FontStyle.Bold);
-            trayMenu.Items.Add(show);
-            trayMenu.Items.Add(new ToolStripMenuItem("Abrir menú", null, (s, e) => { ShowFromTray(); TogglePanel(); })
-                { ShortcutKeyDisplayString = "F2" });
-            trayMenu.Items.Add(new ToolStripSeparator());
-            trayMenu.Items.Add(new ToolStripMenuItem("Salir", null, (s, e) => Close()));
+            trayShow.Click += (s, e) => ShowFromTray();
+            trayShow.Font = new Font(trayShow.Font, FontStyle.Bold);
+            trayOpenMenu.Click += (s, e) => { ShowFromTray(); TogglePanel(); };
+            trayOpenMenu.ShortcutKeyDisplayString = "F2";
+            trayExit.Click += (s, e) => Close();
+            trayMenu.Items.AddRange(new ToolStripItem[] { trayShow, trayOpenMenu, new ToolStripSeparator(), trayExit });
+            ApplyLanguageTexts();
             tray.Icon = Icon;
             tray.Text = "Tenhou";
             tray.ContextMenuStrip = trayMenu;
@@ -103,8 +109,9 @@ namespace TenhouDesktop
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this,
-                    "No se pudo iniciar WebView2.\n\nInstala el \"Microsoft Edge WebView2 Runtime\" e inténtalo de nuevo.\n\n" + ex.Message,
+                MessageBox.Show(this, Lang.T(
+                    "No se pudo iniciar WebView2.\n\nInstala el \"Microsoft Edge WebView2 Runtime\" e inténtalo de nuevo.\n\n",
+                    "WebView2 could not be started.\n\nInstall the \"Microsoft Edge WebView2 Runtime\" and try again.\n\n") + ex.Message,
                     "Tenhou", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 confirmedExit = true;
                 Close();
@@ -138,6 +145,8 @@ namespace TenhouDesktop
             // so the page itself reports our shortcuts back to the app.
             await core.AddScriptToExecuteOnDocumentCreatedAsync(ShortcutScript);
             await core.AddScriptToExecuteOnDocumentCreatedAsync(TenhouPresence.PageScript);
+            await UpdateTranslateConfig();
+            await core.AddScriptToExecuteOnDocumentCreatedAsync(Program.LoadResource("TenhouDesktop.translate.js"));
             core.WebMessageReceived += (s, e) =>
             {
                 Uri source;
@@ -149,7 +158,11 @@ namespace TenhouDesktop
             ApplyDiscordSettings();
 
             // Started on NavigationStarting: when Tenhou's scripts hang, the page never finishes loading
-            core.NavigationStarting += (s, e) => WatchTenhouLoad();
+            core.NavigationStarting += (s, e) =>
+            {
+                WatchTenhouLoad();
+                if (tenhouReloadNeeded) { tenhouReloadNeeded = false; UpdatePanel(); }
+            };
 
             web.ZoomFactor = settings.Zoom;
             web.ZoomFactorChanged += (s, e) => { settings.Zoom = web.ZoomFactor; UpdatePanel(); };
@@ -168,11 +181,10 @@ namespace TenhouDesktop
     'background:radial-gradient(800px 400px at 50% 0%,#2b1f44,#141019);color:#f3eef9;font:15px Segoe UI,sans-serif;';
   d.innerHTML = '<div style=""text-align:center;max-width:460px;padding:28px 32px;border-radius:16px;background:#211a2b;' +
     'border:1px solid rgba(230,195,106,.3)""><div style=""font-size:40px;color:#e6c36a"">天</div>' +
-    '<h2 style=""margin:8px 0 6px"">No se puede conectar con Tenhou</h2>' +
-    '<p style=""color:#a99cbd;margin:0 0 18px"">Puede estar en mantenimiento o haber un problema de conexión con su servidor. ' +
-    'Inténtalo de nuevo en unos minutos.</p>' +
+    '<h2 style=""margin:8px 0 6px"">%TITLE%</h2>' +
+    '<p style=""color:#a99cbd;margin:0 0 18px"">%TEXT%</p>' +
     '<button onclick=""location.reload()"" style=""padding:10px 22px;border:0;border-radius:10px;font:600 14px Segoe UI;' +
-    'cursor:pointer;color:#2a1d06;background:linear-gradient(#e6c36a,#c9973b)"">Reintentar</button></div>';
+    'cursor:pointer;color:#2a1d06;background:linear-gradient(#e6c36a,#c9973b)"">%RETRY%</button></div>';
   document.body.appendChild(d);
   return 'shown';
 })()";
@@ -191,7 +203,12 @@ namespace TenhouDesktop
         {
             loadWatchdog.Stop();
             if (web.CoreWebView2 != null && web.CoreWebView2.Source.StartsWith("https://tenhou.net/"))
-                web.CoreWebView2.ExecuteScriptAsync(LoadFailedOverlay);
+                web.CoreWebView2.ExecuteScriptAsync(LoadFailedOverlay
+                    .Replace("%TITLE%", Lang.T("No se puede conectar con Tenhou", "Cannot connect to Tenhou"))
+                    .Replace("%TEXT%", Lang.T(
+                        "Puede estar en mantenimiento o haber un problema de conexión con su servidor. Inténtalo de nuevo en unos minutos.",
+                        "It may be under maintenance, or there is a problem reaching its server. Try again in a few minutes."))
+                    .Replace("%RETRY%", Lang.T("Reintentar", "Retry")));
         }
 
         static bool IsTenhouViewer(string url)
@@ -256,7 +273,8 @@ window.addEventListener('keydown', function(e){
                 if (!trayHintShown)
                 {
                     trayHintShown = true;
-                    tray.ShowBalloonTip(3000, "Tenhou sigue abierto", "Haz clic en el ícono de la bandeja para volver.", ToolTipIcon.Info);
+                    tray.ShowBalloonTip(3000, Lang.T("Tenhou sigue abierto", "Tenhou is still running"),
+                        Lang.T("Haz clic en el ícono de la bandeja para volver.", "Click the tray icon to bring it back."), ToolTipIcon.Info);
                 }
             }
             else if (WindowState != FormWindowState.Minimized)
@@ -278,7 +296,8 @@ window.addEventListener('keydown', function(e){
         {
             if (ActiveForm == this) return;
             if (Visible) Native.FlashUntilFocused(Handle);
-            else tray.ShowBalloonTip(5000, "Tenhou", "Hay sonido en Tenhou: ¿empezó la partida?", ToolTipIcon.Info);
+            else tray.ShowBalloonTip(5000, "Tenhou", Lang.T("Hay sonido en Tenhou: ¿empezó la partida?",
+                "Tenhou is playing a sound: has your game started?"), ToolTipIcon.Info);
         }
 
         void UpdateKeepAwake()
@@ -319,7 +338,8 @@ window.addEventListener('keydown', function(e){
             if (e.CloseReason == CloseReason.UserClosing && settings.ConfirmClose && !confirmedExit)
             {
                 ShowFromTray();
-                var answer = MessageBox.Show(this, "¿Seguro que quieres cerrar Tenhou?\n\nSi estás en una partida, te desconectarás.",
+                var answer = MessageBox.Show(this, Lang.T("¿Seguro que quieres cerrar Tenhou?\n\nSi estás en una partida, te desconectarás.",
+                    "Close Tenhou?\n\nIf you're in a game, you'll be disconnected."),
                     "Tenhou", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (answer != DialogResult.Yes) { e.Cancel = true; return; }
             }
@@ -343,6 +363,44 @@ window.addEventListener('keydown', function(e){
             if (panel != null)
                 settings.PanelBounds = panel.WindowState == FormWindowState.Normal ? panel.Bounds : panel.RestoreBounds;
             try { settings.Save(); } catch { }
+        }
+
+        // ---- Language ----
+
+        void ApplyLanguageTexts()
+        {
+            trayShow.Text = Lang.T("Mostrar Tenhou", "Show Tenhou");
+            trayOpenMenu.Text = Lang.T("Abrir menú", "Open menu");
+            trayExit.Text = Lang.T("Salir", "Exit");
+            if (panel != null) panel.Text = Lang.T("Tenhou — Menú", "Tenhou — Menu");
+        }
+
+        // Tells translate.js whether to run. Scripts added on document creation only run on the next load.
+        async System.Threading.Tasks.Task UpdateTranslateConfig()
+        {
+            var core = web.CoreWebView2;
+            if (core == null) return;
+            if (translateConfigScriptId != null) core.RemoveScriptToExecuteOnDocumentCreated(translateConfigScriptId);
+            translateConfigScriptId = await core.AddScriptToExecuteOnDocumentCreatedAsync(
+                "window.__tdk = { translate: " + (settings.TranslateTenhou ? "true" : "false") + " };");
+        }
+
+        void SetLanguage(string language)
+        {
+            if (language != "auto" && language != "es" && language != "en") return;
+            settings.Language = language;
+            Lang.Set(language);
+            ApplyLanguageTexts();
+            // Tenhou keeps its own language in localStorage "lang"; without it, it follows the system language
+            if (web.CoreWebView2 != null && web.CoreWebView2.Source.StartsWith("https://tenhou.net/"))
+            {
+                web.CoreWebView2.ExecuteScriptAsync(language == "auto"
+                    ? "localStorage.removeItem('lang')"
+                    : "localStorage.setItem('lang', '" + Lang.Code + "')");
+                tenhouReloadNeeded = true;
+            }
+            presence.Refresh();
+            if (settings.DiscordEnabled) discord.Set(presence.Activity);
         }
 
         // ---- Discord ----
@@ -442,7 +500,7 @@ window.addEventListener('keydown', function(e){
             {
                 games.Add(new Dictionary<string, object> {
                     { "id", log.Id }, { "when", log.When }, { "sanma", log.IsSanma },
-                    { "players", log.IsSanma ? "3 jugadores" : "4 jugadores" }
+                    { "players", log.Players }
                 });
             }
             return new Dictionary<string, object> {
@@ -450,7 +508,9 @@ window.addEventListener('keydown', function(e){
                 { "minimizeToTray", settings.MinimizeToTray }, { "confirmClose", settings.ConfirmClose },
                 { "keepAwake", settings.KeepAwake }, { "panelOnTop", settings.PanelOnTop },
                 { "discord", settings.DiscordEnabled }, { "discordAppId", settings.DiscordAppId },
-                { "discordBuiltIn", BuiltInDiscordAppId.Length > 0 }, { "games", games }
+                { "discordBuiltIn", BuiltInDiscordAppId.Length > 0 }, { "games", games },
+                { "lang", Lang.Code }, { "language", settings.Language }, { "translateTenhou", settings.TranslateTenhou },
+                { "reloadNeeded", tenhouReloadNeeded }
             };
         }
 
@@ -478,6 +538,16 @@ window.addEventListener('keydown', function(e){
                     else if ((string)value == "keepAwake") { settings.KeepAwake = !settings.KeepAwake; UpdateKeepAwake(); }
                     else if ((string)value == "panelOnTop") { settings.PanelOnTop = !settings.PanelOnTop; panel.TopMost = settings.PanelOnTop; }
                     else if ((string)value == "discord") { settings.DiscordEnabled = !settings.DiscordEnabled; ApplyDiscordSettings(); }
+                    else if ((string)value == "translateTenhou")
+                    {
+                        settings.TranslateTenhou = !settings.TranslateTenhou;
+                        var _ = UpdateTranslateConfig();
+                        tenhouReloadNeeded = true;
+                    }
+                    break;
+                case "language":
+                    msg.TryGetValue("value", out value);
+                    SetLanguage(value as string);
                     break;
                 case "discordAppId":
                     msg.TryGetValue("value", out value);
@@ -510,7 +580,7 @@ window.addEventListener('keydown', function(e){
         void OpenReplay(string url)
         {
             if (env == null) return;
-            new BrowserWindow(env, "Replay de Tenhou", url, null, Icon).Show();
+            new BrowserWindow(env, Lang.T("Replay de Tenhou", "Tenhou replay"), url, null, Icon).Show();
         }
 
         void OpenReplayFromClipboard()
@@ -519,7 +589,8 @@ window.addEventListener('keydown', function(e){
             try { url = TenhouLogs.FindReplayUrl(Clipboard.GetText()); } catch { }
             if (url == null)
             {
-                MessageBox.Show(this, "Copia primero un enlace de replay de Tenhou (tenhou.net/0/?log=...).",
+                MessageBox.Show(this, Lang.T("Copia primero un enlace de replay de Tenhou (tenhou.net/0/?log=...).",
+                    "Copy a Tenhou replay link first (tenhou.net/0/?log=...)."),
                     "Tenhou", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }

@@ -35,6 +35,7 @@ if (Test-Path $exe) { Rename-Item $exe 'Tenhou.old.exe' -ErrorAction SilentlyCon
     "/out:$exe" `
     "/win32icon:$root\assets\icon.ico" `
     "/resource:$root\src\panel.html,TenhouDesktop.panel.html" `
+    "/resource:$root\src\translate.js,TenhouDesktop.translate.js" `
     "/r:$out\Microsoft.Web.WebView2.Core.dll" `
     "/r:$out\Microsoft.Web.WebView2.WinForms.dll" `
     /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll `

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
@@ -25,7 +23,7 @@ namespace TenhouDesktop
 
         public MenuPanel(CoreWebView2Environment env)
         {
-            Text = "Tenhou — Menú";
+            Text = Lang.T("Tenhou — Menú", "Tenhou — Menu");
             StartPosition = FormStartPosition.Manual;
             MinimumSize = new Size(760, 480);
             BackColor = Color.FromArgb(0x14, 0x10, 0x19);
@@ -60,7 +58,7 @@ namespace TenhouDesktop
                     pageReady = true;
                     if (pendingState != null) Render(pendingState);
                 };
-                core.NavigateToString(LoadPage());
+                core.NavigateToString(Program.LoadResource("TenhouDesktop.panel.html"));
             };
         }
 
@@ -73,13 +71,6 @@ namespace TenhouDesktop
             base.OnHandleCreated(e);
             int on = 1;
             if (DwmSetWindowAttribute(Handle, 20, ref on, 4) != 0) DwmSetWindowAttribute(Handle, 19, ref on, 4);
-        }
-
-        static string LoadPage()
-        {
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TenhouDesktop.panel.html"))
-            using (var reader = new StreamReader(stream))
-                return reader.ReadToEnd();
         }
 
         public void Render(object state)

@@ -71,6 +71,8 @@ Requires **Windows 10 or 11**. It uses WebView2, the Microsoft Edge engine that 
 
 **How do I change the language?** **F2 → Options → Language**: Automatic (follows Windows), Español, English or Português. Reload Tenhou afterwards (`F5`), ideally outside a game.
 
+**I prefer Tenhou as it is.** In **F2 → Options**, turn off *Translate what Tenhou leaves in Japanese* to see Tenhou's original texts, and *Also change Tenhou's language* to choose Tenhou's language in its own menu.
+
 **Something isn't working.** Use **F2 → Options → Help → Report a problem**, or [open an issue](../../issues/new/choose) directly. Attaching `log.txt` (**F2 → Options → Help → App log**) helps a lot: it only has app events, never your Tenhou ID. What changed in each version is in the [changelog](CHANGELOG.md).
 
 **A translation is wrong or something is still in Japanese.** Please [open an issue](../../issues/new/choose) with a screenshot. The translations live in [`src/translate.js`](src/translate.js) and are easy to extend.

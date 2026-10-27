@@ -6,13 +6,13 @@
 // so all players see the same words: Tanyao, Chiitoitsu, Ryuukyoku, Minkan... Only the rest is translated.
 (function () {
   if (!/(^|\.)(tenhou\.net|ron2\.jp)$/.test(location.hostname)) return;
-  if ((window.__tdk || {}).translate === false) return;
-
   // Same language Tenhou uses for its own strings: its "lang" setting, else the system language
   var code = 'ja';
   try { code = localStorage.getItem('lang') || navigator.language || 'ja'; } catch (e) {}
   code = String(code).split('-')[0].toLowerCase();
-  if (code == 'ja' || code == 'jp') return;
+  // With translation off (F2 → Options) Tenhou shows its own texts untouched; only the repair that keeps
+  // its Portuguese stats from crashing the page still applies
+  var translating = (window.__tdk || {}).translate !== false && code != 'ja' && code != 'jp';
   var col = code == 'es' ? 2 : code == 'pt' ? 3 : 1;
 
   // Tenhou's own language files (res/lang/string…_xx.json, keyed by string id) get a few fixes as they
@@ -29,15 +29,16 @@
   var TENHOU_STATS = { 4: 'Tobi<small>%</small>', 10: 'Agari<small>%</small>', 11: 'Houjuu<small>%</small>', 12: 'Naki<small>%</small>',
     13: 'Riichi<small>%</small>' };
   function patchStrings(lang, data) {
-    var own = TENHOU_LANG[lang] || {}, k;
-    for (k in TENHOU_ALL) if (k in data) data[k] = TENHOU_ALL[k];
-    for (k in own) if (k in data) data[k] = own[k];
-    if (Array.isArray(data[285])) for (k in TENHOU_STATS) data[285][k] = TENHOU_STATS[k];
     // The stats tables are built from a template where "(", ")", "," and "|" are syntax. The Portuguese
     // file has "Pontos<small>(méd.)</small>", which breaks the table and with it the settings screen.
     [283, 285].forEach(function (id) {
       if (Array.isArray(data[id])) data[id] = data[id].map(function (s) { return String(s).replace(/[(),|]/g, ' ').replace(/\s+/g, ' '); });
     });
+    if (!translating) return data;
+    var own = TENHOU_LANG[lang] || {}, k;
+    for (k in TENHOU_ALL) if (k in data) data[k] = TENHOU_ALL[k];
+    for (k in own) if (k in data) data[k] = own[k];
+    if (Array.isArray(data[285])) for (k in TENHOU_STATS) data[285][k] = TENHOU_STATS[k];
     // The Portuguese file has a few characters decoded twice ("â€¦" for "…", "â– " for "■")
     if (lang == 'pt') for (k in data) if (typeof data[k] == 'string')
       data[k] = data[k].replace(/â€¦/g, '…').replace(/â– ?/g, '■');
@@ -70,6 +71,8 @@
     }
     return xhrOpen.apply(this, arguments);
   };
+
+  if (!translating) return;
 
   var WORDS = [
     // Rooms and lobbies

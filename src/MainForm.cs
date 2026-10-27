@@ -199,7 +199,6 @@ namespace Rinshan
             await core.AddScriptToExecuteOnDocumentCreatedAsync(ShortcutScript);
             await core.AddScriptToExecuteOnDocumentCreatedAsync(TenhouPresence.PageScript);
             await UpdateTranslateConfig();
-            await core.AddScriptToExecuteOnDocumentCreatedAsync(Program.LoadResource("Rinshan.translate.js"));
             core.WebMessageReceived += (s, e) =>
             {
                 Uri source;
@@ -486,14 +485,16 @@ window.addEventListener('keydown', function(e){
             if (panel != null) panel.Text = Lang.T("Rinshan — Menú", "Rinshan — Menu", "Rinshan — Menu");
         }
 
-        // Tells translate.js whether to run. Scripts added on document creation only run on the next load.
+        // translate.js with its setting in front of it, as one script: a separate setting script added later
+        // would run after translate.js. Scripts added on document creation only run on the next load.
         async System.Threading.Tasks.Task UpdateTranslateConfig()
         {
             var core = web.CoreWebView2;
             if (core == null) return;
             if (translateConfigScriptId != null) core.RemoveScriptToExecuteOnDocumentCreated(translateConfigScriptId);
             translateConfigScriptId = await core.AddScriptToExecuteOnDocumentCreatedAsync(
-                "window.__tdk = { translate: " + (settings.TranslateTenhou ? "true" : "false") + " };");
+                "window.__tdk = { translate: " + (settings.TranslateTenhou ? "true" : "false") + " };\n" +
+                Program.LoadResource("Rinshan.translate.js"));
         }
 
         void SetLanguage(string language)
@@ -502,14 +503,7 @@ window.addEventListener('keydown', function(e){
             settings.Language = language;
             Lang.Set(language);
             ApplyLanguageTexts();
-            // Tenhou keeps its own language in localStorage "lang"; without it, it follows the system language
-            if (web.CoreWebView2 != null && web.CoreWebView2.Source.StartsWith("https://tenhou.net/"))
-            {
-                web.CoreWebView2.ExecuteScriptAsync(language == "auto"
-                    ? "localStorage.removeItem('lang')"
-                    : "localStorage.setItem('lang', '" + Lang.Code + "')");
-                tenhouReloadNeeded = true;
-            }
+            if (settings.SyncTenhouLanguage) ApplyTenhouLanguage();
             presence.Refresh();
             if (settings.DiscordEnabled) discord.Set(presence.Activity);
         }
@@ -572,6 +566,17 @@ window.addEventListener('keydown', function(e){
                     "Não foi possível atualizar. Você pode baixar a nova versão manualmente no GitHub.\n\n") + ex.Message,
                     "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+        }
+
+        // Tenhou keeps its own language in localStorage "lang"; without it, it follows the system language.
+        // With the sync off, Rinshan leaves it alone and Tenhou's own language menu decides.
+        void ApplyTenhouLanguage()
+        {
+            if (web.CoreWebView2 == null || !web.CoreWebView2.Source.StartsWith("https://tenhou.net/")) return;
+            web.CoreWebView2.ExecuteScriptAsync(settings.Language == "auto"
+                ? "localStorage.removeItem('lang')"
+                : "localStorage.setItem('lang', '" + Lang.Code + "')");
+            tenhouReloadNeeded = true;
         }
 
         // ---- Discord ----
@@ -755,6 +760,7 @@ window.addEventListener('keydown', function(e){
                 { "discord", settings.DiscordEnabled }, { "discordAppId", settings.DiscordAppId },
                 { "discordBuiltIn", BuiltInDiscordAppId.Length > 0 }, { "games", games },
                 { "lang", Lang.Code }, { "language", settings.Language }, { "translateTenhou", settings.TranslateTenhou },
+                { "syncTenhouLanguage", settings.SyncTenhouLanguage },
                 { "reloadNeeded", tenhouReloadNeeded },
                 { "version", Updater.CurrentText }, { "checkUpdates", settings.CheckUpdates }, { "updateStatus", updateStatus },
                 { "updateVersion", update != null ? Updater.Format(update.Version) : null },
@@ -793,6 +799,11 @@ window.addEventListener('keydown', function(e){
                         settings.TranslateTenhou = !settings.TranslateTenhou;
                         var _ = UpdateTranslateConfig();
                         tenhouReloadNeeded = true;
+                    }
+                    else if ((string)value == "syncTenhouLanguage")
+                    {
+                        settings.SyncTenhouLanguage = !settings.SyncTenhouLanguage;
+                        if (settings.SyncTenhouLanguage) ApplyTenhouLanguage();
                     }
                     else if ((string)value == "shareLobby")
                     {

@@ -24,6 +24,7 @@ namespace Rinshan
         public string DiscordAppId = "";
         public string Language = "auto";    // auto, es, en or pt
         public bool TranslateTenhou = true;
+        public bool SyncTenhouLanguage = true;   // changing the app language also changes Tenhou's
         public bool CheckUpdates = true;
         public bool ShareLobby = false;
         // Saved private lobbies: number and a name the player chose
@@ -65,6 +66,7 @@ namespace Rinshan
             // Settings from before 1.2 have no language: those versions were Spanish only, so stay in Spanish
             else if (!values.ContainsKey("language")) Language = "es";
             TranslateTenhou = ReadBool(values, "translatetenhou", TranslateTenhou);
+            SyncTenhouLanguage = ReadBool(values, "synctenhoulanguage", SyncTenhouLanguage);
             CheckUpdates = ReadBool(values, "checkupdates", CheckUpdates);
             ShareLobby = ReadBool(values, "sharelobby", ShareLobby);
             // lobbies=1234:Friends|5678:Club
@@ -116,6 +118,7 @@ namespace Rinshan
                 "discordappid=" + DiscordAppId,
                 "language=" + Language,
                 "translatetenhou=" + TranslateTenhou,
+                "synctenhoulanguage=" + SyncTenhouLanguage,
                 "checkupdates=" + CheckUpdates,
                 "sharelobby=" + ShareLobby,
                 "lobbies=" + string.Join("|", Lobbies.Select(l => l.Key + ":" + l.Value))

@@ -371,6 +371,11 @@
           <div class="text"><b data-i18n="translateTitle"></b><span data-i18n="translateDesc"></span></div>
           <input type="checkbox" class="switch" id="translateTenhou" data-toggle="option:translateTenhou">
         </label>
+        <label class="setting">
+          <div class="icon"><svg class="i" data-icon="link"></svg></div>
+          <div class="text"><b data-i18n="syncLangTitle"></b><span data-i18n="syncLangDesc"></span></div>
+          <input type="checkbox" class="switch" id="syncTenhouLanguage" data-toggle="option:syncTenhouLanguage">
+        </label>
       </div>
       <h2 data-i18n="windowHeader"></h2>
       <div class="group">
@@ -470,6 +475,7 @@
     translate: '<path d="M4 5h8M8 3v2M6 5c0 4 2.5 7 6 8.5M10 5c-.5 3.5-3 6.5-6 8"/><path d="m13 21 4-9 4 9M14.5 18h5"/>',
     download: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
     door: '<path d="M4 21h16M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17"/><path d="M14 12h.01"/>',
     camera: '<path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
@@ -498,7 +504,8 @@
       reloadNotice: 'Recarga Tenhou para aplicar el cambio. Mejor hazlo fuera de una partida.',
       languageHeader: 'Idioma', languageTitle: 'Idioma de la app y de Tenhou', languageDesc: 'Automático sigue el idioma de Windows',
       languageAuto: 'Automático',
-      translateTitle: 'Traducir lo que Tenhou deja en japonés', translateDesc: 'Salas, reglas, rangos y menús. Los yakus quedan en romaji',
+      translateTitle: 'Traducir lo que Tenhou deja en japonés', translateDesc: 'Salas, reglas, rangos y menús, con los yakus en romaji. Apágalo para ver los textos originales de Tenhou',
+      syncLangTitle: 'Cambiar también el idioma de Tenhou', syncLangDesc: 'Apágalo para elegir el idioma de Tenhou en su propio menú',
       windowHeader: 'Ventana de Tenhou',
       trayTitle: 'Minimizar a la bandeja', trayDesc: 'Al minimizar, Tenhou se esconde junto al reloj',
       confirmTitle: 'Confirmar antes de cerrar', confirmDesc: 'Evita desconectarte de una partida por accidente',
@@ -550,7 +557,8 @@
       reloadNotice: 'Reload Tenhou to apply the change. Best done outside a game.',
       languageHeader: 'Language', languageTitle: 'App and Tenhou language', languageDesc: 'Automatic follows your Windows language',
       languageAuto: 'Automatic',
-      translateTitle: 'Translate what Tenhou leaves in Japanese', translateDesc: 'Rooms, rules, ranks and menus. Yaku stay in romaji',
+      translateTitle: 'Translate what Tenhou leaves in Japanese', translateDesc: "Rooms, rules, ranks and menus, with yaku in romaji. Turn it off to see Tenhou's original texts",
+      syncLangTitle: "Also change Tenhou's language", syncLangDesc: "Turn it off to pick Tenhou's language in its own menu",
       windowHeader: 'Tenhou window',
       trayTitle: 'Minimize to tray', trayDesc: 'When minimized, Tenhou hides next to the clock',
       confirmTitle: 'Confirm before closing', confirmDesc: 'Avoids leaving a game by accident',
@@ -602,7 +610,8 @@
       reloadNotice: 'Recarregue o Tenhou para aplicar a mudança. De preferência fora de uma partida.',
       languageHeader: 'Idioma', languageTitle: 'Idioma do app e do Tenhou', languageDesc: 'Automático segue o idioma do Windows',
       languageAuto: 'Automático',
-      translateTitle: 'Traduzir o que o Tenhou deixa em japonês', translateDesc: 'Salas, regras, ranks e menus. Os yaku ficam em romaji',
+      translateTitle: 'Traduzir o que o Tenhou deixa em japonês', translateDesc: 'Salas, regras, ranks e menus, com os yaku em romaji. Desligue para ver os textos originais do Tenhou',
+      syncLangTitle: 'Mudar também o idioma do Tenhou', syncLangDesc: 'Desligue para escolher o idioma do Tenhou no menu dele',
       windowHeader: 'Janela do Tenhou',
       trayTitle: 'Minimizar para a bandeja', trayDesc: 'Ao minimizar, o Tenhou fica escondido perto do relógio',
       confirmTitle: 'Confirmar antes de fechar', confirmDesc: 'Evita sair de uma partida sem querer',
@@ -742,7 +751,7 @@
   function render(s) {
     state = s;
     if (s.lang && s.lang != lang && STRINGS[s.lang]) { lang = s.lang; applyStrings(); }
-    ['muted', 'fullscreen', 'minimizeToTray', 'confirmClose', 'keepAwake', 'panelOnTop', 'discord', 'translateTenhou'].forEach(function (id) {
+    ['muted', 'fullscreen', 'minimizeToTray', 'confirmClose', 'keepAwake', 'panelOnTop', 'discord', 'translateTenhou', 'syncTenhouLanguage'].forEach(function (id) {
       document.getElementById(id).checked = !!s[id];
     });
     document.querySelectorAll('#language button').forEach(function (b) {

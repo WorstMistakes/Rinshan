@@ -55,7 +55,7 @@ namespace Rinshan
             settings = new Settings(Path.Combine(dataDir, "settings.ini"));
             try { settings.Load(); } catch (Exception ex) { Log.Error("Could not read settings.ini", ex); }
             Lang.Set(settings.Language);
-            Log.Write("Rinshan " + Updater.CurrentText + " started · Windows " + Environment.OSVersion.Version + " · language " + Lang.Code);
+            Log.Write("Rinshan " + Updater.CurrentText + " started, " + WindowsVersion() + ", language " + Lang.Code);
 
             Text = "Rinshan";
             BackColor = Color.Black;
@@ -121,6 +121,21 @@ namespace Rinshan
             }
             Directory.CreateDirectory(dir);
             return dir;
+        }
+
+        // Environment.OSVersion reports Windows 8 to apps without a manifest, so read the real build
+        static string WindowsVersion()
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+                {
+                    int build;
+                    int.TryParse(Convert.ToString(key.GetValue("CurrentBuild")), out build);
+                    return (build >= 22000 ? "Windows 11 " : "Windows 10 ") + key.GetValue("DisplayVersion") + " (build " + build + ")";
+                }
+            }
+            catch { return "Windows " + Environment.OSVersion.Version; }
         }
 
         static bool IsOnScreen(Rectangle r)
@@ -475,6 +490,7 @@ window.addEventListener('keydown', function(e){
             }
             UpdatePanel();
             bool isNew = update != null && (known == null || known.Version != update.Version);
+            if (isNew) Log.Write("Update available: " + Updater.Format(update.Version));
             if (isNew && !manual && (panel == null || !panel.Visible))
                 ShowBalloon(Lang.T("Hay una nueva versión de Rinshan", "A new version of Rinshan is available", "Há uma nova versão do Rinshan"),
                     Lang.T("Abre el menú (F2) para actualizar a la v", "Open the menu (F2) to update to v", "Abra o menu (F2) para atualizar para a v") +

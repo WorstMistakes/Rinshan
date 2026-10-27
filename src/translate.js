@@ -152,7 +152,9 @@
 
   // Lobby room codes, e.g. 四般東喰赤速: players, room, East/South, then kuitan, red fives, fast, chips.
   // In ranked rooms kuitan and red fives are the norm, so only their absence is spelled out.
+  var roomTranslated = false;
   function roomName(m, players, room, length, kui, aka, speed, chips) {
+    roomTranslated = true;
     var parts = [];
     if (players == '三') parts.push('3P');
     parts.push(ROOM[room], length == '南' ? pick('South', 'Sur') : pick('East', 'Este'));
@@ -177,8 +179,8 @@
     [new RegExp('有効期限' + D + '日以上', 'g'), function (m, n) { return num(n) + pick('+ days left', '+ días restantes'); }],
     [new RegExp('有効期限' + D + '日分', 'g'), function (m, n) { return pick('valid ', 'válido ') + num(n) + pick(' days', ' días'); }],
     [new RegExp(D + '日(間|分)', 'g'), function (m, n) { return num(n) + pick(' days', ' días'); }],
-    [new RegExp(D + '級', 'g'), function (m, n) { return num(n) + ' kyu'; }],
-    [new RegExp('([一二三四五六七八九十])段', 'g'), function (m, k) { return KANJI_NUM[k] + ' dan'; }],
+    [new RegExp(D + ' ?級', 'g'), function (m, n) { return num(n) + ' kyu'; }],
+    [new RegExp('([一二三四五六七八九十]) ?段', 'g'), function (m, k) { return KANJI_NUM[k] + ' dan'; }],
     [new RegExp('([+\\-]?[0-9０-９]+)枚', 'g'), function (m, n) { return num(n) + pick(' chips', ' fichas'); }],
     [new RegExp('([+\\-]?[0-9０-９.]+)点', 'g'), function (m, n) { return num(n) + ' pts'; }],
     [new RegExp(D + '符', 'g'), function (m, n) { return num(n) + ' fu'; }],
@@ -212,8 +214,26 @@
   function fixText(node) {
     var p = node.parentNode;
     if (p && SKIP[p.nodeName]) return;
+    roomTranslated = false;
     var v = node.nodeValue, t = translate(v);
     if (t !== v) node.nodeValue = t;
+    if (roomTranslated && p) fit(p);
+  }
+
+  // Room names are longer in English than in kanji: keep them on one line, shrinking the text a little
+  // if the room button is too narrow
+  function fit(el) {
+    requestAnimationFrame(function () {
+      var box = el;
+      while (box && box.nodeType == 1 && !box.clientWidth) box = box.parentElement;
+      if (!box || box.nodeType != 1) return;
+      box.style.whiteSpace = 'nowrap';
+      var size = parseFloat(getComputedStyle(box).fontSize), min = size * 0.65;
+      while (box.scrollWidth > box.clientWidth && size > min) {
+        size -= 1;
+        box.style.fontSize = size + 'px';
+      }
+    });
   }
   function fixAttrs(el) {
     ['placeholder', 'title'].forEach(function (a) {
@@ -246,8 +266,12 @@
   // words. Only whole known pieces are swapped there, with short forms: the round reads "E1".
   var CANVAS = { '局': '', '本場': '', '級': 'kyu', '段': 'dan', '初': '1', '一': '1', '二': '2', '三': '3', '四': '4',
     '五': '5', '六': '6', '七': '7', '八': '8', '九': '9', '十': '10' };
+  var RANK = new RegExp('^(' + D + ' ?級|[初一二三四五六七八九十] ?段)$');
   function canvasText(t) {
-    return CANVAS.hasOwnProperty(t) ? CANVAS[t] : dict.hasOwnProperty(t) ? dict[t] : null;
+    if (CANVAS.hasOwnProperty(t)) return CANVAS[t];
+    if (dict.hasOwnProperty(t)) return dict[t];
+    if (RANK.test(t)) return translate(t.replace(/^初/, '一'));
+    return null;
   }
   var C2D = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
   if (C2D) ['fillText', 'strokeText', 'measureText'].forEach(function (name) {

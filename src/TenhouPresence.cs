@@ -18,7 +18,8 @@ namespace Rinshan
   function post(o){ try { chrome.webview.postMessage('presence:' + JSON.stringify(o)); } catch (e) {} }
   function handle(m){
     switch (m && m.tag) {
-      case 'HELO': post({s:'lobby'}); break;
+      case 'HELO': post({s:'lobby', connect:1}); break;
+      case 'CHAT': if (m.lobby) post({s:'room', id:m.lobby}); break;
       case 'GO': post({s:'game', type:m.type, lobby:m.lobby}); break;
       case 'INIT': post({s:'round', seed:m.seed, ten:m.ten}); break;
       case 'UN': if (m.n0) post({s:'players', names:[m.n0, m.n1, m.n2, m.n3], dan:m.dan, rate:m.rate}); break;
@@ -32,7 +33,11 @@ namespace Rinshan
       ws.addEventListener('close', function(){ post({s:'offline'}); });
       var send = ws.send;
       ws.send = function(data){
-        try { var m = JSON.parse(data); if (m.tag == 'JOIN') post(m.t ? {s:'search', t:m.t} : {s:'lobby'}); } catch (e) {}
+        try {
+          var m = JSON.parse(data);
+          if (m.tag == 'JOIN') post(m.t ? {s:'search', t:m.t} : {s:'lobby'});
+          else if (m.tag == 'LOBBY') post({s:'room', id:m.id || '0'});
+        } catch (e) {}
         return send.apply(this, arguments);
       };
     }
@@ -95,16 +100,27 @@ namespace Rinshan
         {
             if (events.Count == 0) return;
             var start = startedAt;
+            replaying = true;
             foreach (var e in events.ToList()) ApplyEvent(e);
+            replaying = false;
             if (Activity != null) Show(details, state, start);
         }
+
+        bool replaying;   // the lobby the player is in isn't part of the replayed events
 
         bool ApplyEvent(Dictionary<string, object> e)
         {
             var kind = Get(e, "s");
             switch (kind)
             {
+                case "room":
+                    // Entering a lobby (the client asks for it, the server confirms it in a CHAT message):
+                    // "0" is the ranked lobby. Only the menu cares, so the activity doesn't change.
+                    lobby = Get(e, "id");
+                    return false;
                 case "lobby":
+                    // A new connection starts in the ranked lobby until a private one is entered
+                    if (Get(e, "connect") != null && !replaying) lobby = null;
                     inGame = false;
                     Show(Lang.T("En el lobby", "In the lobby", "No lobby"), null, null);
                     break;

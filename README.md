@@ -1,15 +1,17 @@
 <p align="center">
-  <img src="assets/discord-logo.png" width="96" alt="Tenhou Desktop">
+  <img src="assets/discord-logo.png" width="96" alt="Rinshan">
 </p>
 
-<h1 align="center">Tenhou Desktop</h1>
+<h1 align="center">Rinshan</h1>
 
 <p align="center">
-  Play <a href="https://tenhou.net/3/">Tenhou</a> in its own desktop window, no browser needed.
+  An unofficial desktop app for <a href="https://tenhou.net/3/">Tenhou</a>: play in its own window, no browser needed.
 </p>
 
 > [!IMPORTANT]
-> **Unofficial project.** Not affiliated with Tenhou / C-EGG, NAGA or Mortal. The app only shows the official Tenhou website in a window: **it does not automate play or give any kind of in-game assistance.**
+> **Unofficial project.** Not affiliated with Tenhou / C-EGG, NAGA or Mortal, and not related to Tenhou's own paid Windows and Desktop 4K clients. Rinshan only shows the free Tenhou web client ([tenhou.net/3](https://tenhou.net/3/)) in a window: **it does not automate play or give any kind of in-game assistance.**
+>
+> *Rinshan* (嶺上) is named after rinshan kaihou, winning on the replacement tile after a kan. Formerly *Tenhou Desktop*.
 
 ![F2 menu](docs/menu-games.png)
 
@@ -40,7 +42,9 @@
 ## Download
 
 1. Go to **[Releases](../../releases)** and download the latest `.zip`.
-2. Extract it anywhere and run `Tenhou.exe`.
+2. Extract it anywhere and run `Rinshan.exe`.
+
+Upgrading from Tenhou Desktop? Just delete the old folder: your settings and Tenhou login move over the first time Rinshan starts.
 
 Requires **Windows 10 or 11**. It uses WebView2, the Microsoft Edge engine that ships with Windows.
 
@@ -56,7 +60,7 @@ Requires **Windows 10 or 11**. It uses WebView2, the Microsoft Edge engine that 
 
 ## FAQ
 
-**Is it safe for my account?** The app loads the same page as your browser (`tenhou.net/3/`). Your session is stored only on your PC, in `%LOCALAPPDATA%\TenhouDesktop`.
+**Is it safe for my account?** The app loads the same page as your browser (`tenhou.net/3/`). Your session is stored only on your PC, in `%LOCALAPPDATA%\Rinshan`.
 
 **How does it know which round I'm in, for Discord?** It listens to the messages Tenhou receives from its server (game start, each round, game end) without modifying them, and only uses information you already see on screen. You can turn it off in **F2 → Options → Show on Discord**.
 

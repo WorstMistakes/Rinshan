@@ -1,4 +1,4 @@
-# Genera assets\icon.ico (16-256 px) y assets\discord-logo.png: un 天 dorado sobre morado.
+﻿# Genera assets\icon.ico (16-256 px) y assets\discord-logo.png: un 嶺 (de rinshan) dorado sobre morado.
 # Cada tamaño se dibuja por separado para que el ícono chico siga siendo nítido.
 Add-Type -AssemblyName System.Drawing
 $root = Split-Path $PSScriptRoot -Parent
@@ -39,7 +39,7 @@ function New-Logo([int]$size) {
     $fmt.Alignment = 'Center'; $fmt.LineAlignment = 'Center'
     $gold = New-Object Drawing.Drawing2D.LinearGradientBrush $rect, ([Drawing.Color]::FromArgb(0xf3, 0xd6, 0x8a)), ([Drawing.Color]::FromArgb(0xc9, 0x97, 0x3b)), 90
     $textRect = New-Object Drawing.RectangleF 0, ($size * 0.03), $size, $size
-    $g.DrawString([string][char]0x5929, $font, $gold, $textRect, $fmt)
+    $g.DrawString([string][char]0x5DBA, $font, $gold, $textRect, $fmt)
     $g.Dispose()
     return $bmp
 }

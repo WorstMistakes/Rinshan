@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Windows.Forms;
 
-[assembly: System.Reflection.AssemblyTitle("Tenhou Desktop")]
-[assembly: System.Reflection.AssemblyProduct("Tenhou Desktop")]
-[assembly: System.Reflection.AssemblyVersion("1.2.0.0")]
+[assembly: System.Reflection.AssemblyTitle("Rinshan")]
+[assembly: System.Reflection.AssemblyProduct("Rinshan")]
+[assembly: System.Reflection.AssemblyVersion("1.3.0.0")]
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     static class Program
     {
-        const string MutexName = "TenhouDesktop.SingleInstance";
-        const string ShowEventName = "TenhouDesktop.ShowWindow";
+        const string MutexName = "Rinshan.SingleInstance";
+        const string ShowEventName = "Rinshan.ShowWindow";
 
         [STAThread]
         static void Main()

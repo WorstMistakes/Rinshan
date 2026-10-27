@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     // Secondary window for replays and game reviews. Shares the main window's WebView2 profile,
     // so logins on Mortal/NAGA persist between uses.

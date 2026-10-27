@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     // The app's interface language: Spanish or English. "auto" follows Windows (Spanish if Windows is
     // in Spanish, English otherwise).

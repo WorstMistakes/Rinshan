@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     // Turns what Tenhou's connection reports (lobby, matchmaking, rounds, results) into a Discord activity.
     // Only uses information the player already sees on screen.
@@ -124,7 +124,7 @@ namespace TenhouDesktop
 
             var activity = new Dictionary<string, object> {
                 { "details", details },
-                { "assets", new Dictionary<string, object> { { "large_image", LargeImage }, { "large_text", "Tenhou Desktop" } } },
+                { "assets", new Dictionary<string, object> { { "large_image", LargeImage }, { "large_text", "Rinshan · for Tenhou" } } },
                 { "buttons", new object[] { new Dictionary<string, object> { { "label", Lang.T("Jugar Tenhou", "Play Tenhou") }, { "url", "https://tenhou.net/3/" } } } }
             };
             if (state != null) activity["state"] = state;

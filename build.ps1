@@ -1,4 +1,4 @@
-# Compila dist\Tenhou.exe con el compilador de .NET Framework que ya trae Windows.
+# Compila dist\Rinshan.exe con el compilador de .NET Framework que ya trae Windows.
 # La primera vez descarga la librería de WebView2 desde NuGet a packages\.
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
@@ -26,16 +26,16 @@ foreach ($dll in "$wv\lib\net462\Microsoft.Web.WebView2.Core.dll",
     if (-not (Test-Path $target) -or (Get-Item $target).Length -ne (Get-Item $dll).Length) { Copy-Item $dll $out -Force }
 }
 # A running exe can't be overwritten but can be renamed, so the new build is used on the next launch
-$exe = Join-Path $out 'Tenhou.exe'
-$old = Join-Path $out 'Tenhou.old.exe'
+$exe = Join-Path $out 'Rinshan.exe'
+$old = Join-Path $out 'Rinshan.old.exe'
 try { Remove-Item $old -Force -ErrorAction Stop } catch { }
-if (Test-Path $exe) { Rename-Item $exe 'Tenhou.old.exe' -ErrorAction SilentlyContinue }
+if (Test-Path $exe) { Rename-Item $exe 'Rinshan.old.exe' -ErrorAction SilentlyContinue }
 
 & $csc /nologo /target:winexe /platform:x64 /optimize+ `
     "/out:$exe" `
     "/win32icon:$root\assets\icon.ico" `
-    "/resource:$root\src\panel.html,TenhouDesktop.panel.html" `
-    "/resource:$root\src\translate.js,TenhouDesktop.translate.js" `
+    "/resource:$root\src\panel.html,Rinshan.panel.html" `
+    "/resource:$root\src\translate.js,Rinshan.translate.js" `
     "/r:$out\Microsoft.Web.WebView2.Core.dll" `
     "/r:$out\Microsoft.Web.WebView2.WinForms.dll" `
     /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Web.Extensions.dll `

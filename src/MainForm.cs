@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     class MainForm : Form
     {
@@ -44,13 +44,12 @@ namespace TenhouDesktop
 
         public MainForm()
         {
-            dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TenhouDesktop");
-            Directory.CreateDirectory(dataDir);
+            dataDir = DataDirectory();
             settings = new Settings(Path.Combine(dataDir, "settings.ini"));
             try { settings.Load(); } catch { }
             Lang.Set(settings.Language);
 
-            Text = "Tenhou";
+            Text = "Rinshan";
             BackColor = Color.Black;
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
@@ -70,7 +69,7 @@ namespace TenhouDesktop
             trayMenu.Items.AddRange(new ToolStripItem[] { trayShow, trayOpenMenu, new ToolStripSeparator(), trayExit });
             ApplyLanguageTexts();
             tray.Icon = Icon;
-            tray.Text = "Tenhou";
+            tray.Text = "Rinshan";
             tray.ContextMenuStrip = trayMenu;
             tray.Visible = true;
             tray.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) ShowFromTray(); };
@@ -89,6 +88,22 @@ namespace TenhouDesktop
                 discord.Dispose();
                 if (panel != null) { panel.AllowClose = true; panel.Close(); }
             };
+        }
+
+        // %LOCALAPPDATA%\Rinshan holds the settings and the WebView2 profile (Tenhou login, its settings and
+        // game history). Versions before 1.3 were called Tenhou Desktop, so their folder is moved over once.
+        static string DataDirectory()
+        {
+            var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var dir = Path.Combine(local, "Rinshan");
+            var old = Path.Combine(local, "TenhouDesktop");
+            if (!Directory.Exists(dir) && Directory.Exists(old))
+            {
+                try { Directory.Move(old, dir); }
+                catch { return old; }   // still in use (e.g. an old version is running): keep using it
+            }
+            Directory.CreateDirectory(dir);
+            return dir;
         }
 
         static bool IsOnScreen(Rectangle r)
@@ -112,7 +127,7 @@ namespace TenhouDesktop
                 MessageBox.Show(this, Lang.T(
                     "No se pudo iniciar WebView2.\n\nInstala el \"Microsoft Edge WebView2 Runtime\" e inténtalo de nuevo.\n\n",
                     "WebView2 could not be started.\n\nInstall the \"Microsoft Edge WebView2 Runtime\" and try again.\n\n") + ex.Message,
-                    "Tenhou", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 confirmedExit = true;
                 Close();
                 return;
@@ -134,7 +149,7 @@ namespace TenhouDesktop
             core.DocumentTitleChanged += (s, e) =>
             {
                 var t = core.DocumentTitle;
-                Text = string.IsNullOrEmpty(t) ? "Tenhou" : t;
+                Text = string.IsNullOrEmpty(t) ? "Rinshan" : t;
             };
             // Respect the page's own fullscreen requests
             core.ContainsFullScreenElementChanged += (s, e) => SetFullscreen(core.ContainsFullScreenElement);
@@ -146,7 +161,7 @@ namespace TenhouDesktop
             await core.AddScriptToExecuteOnDocumentCreatedAsync(ShortcutScript);
             await core.AddScriptToExecuteOnDocumentCreatedAsync(TenhouPresence.PageScript);
             await UpdateTranslateConfig();
-            await core.AddScriptToExecuteOnDocumentCreatedAsync(Program.LoadResource("TenhouDesktop.translate.js"));
+            await core.AddScriptToExecuteOnDocumentCreatedAsync(Program.LoadResource("Rinshan.translate.js"));
             core.WebMessageReceived += (s, e) =>
             {
                 Uri source;
@@ -296,7 +311,7 @@ window.addEventListener('keydown', function(e){
         {
             if (ActiveForm == this) return;
             if (Visible) Native.FlashUntilFocused(Handle);
-            else tray.ShowBalloonTip(5000, "Tenhou", Lang.T("Hay sonido en Tenhou: ¿empezó la partida?",
+            else tray.ShowBalloonTip(5000, "Rinshan", Lang.T("Hay sonido en Tenhou: ¿empezó la partida?",
                 "Tenhou is playing a sound: has your game started?"), ToolTipIcon.Info);
         }
 
@@ -340,7 +355,7 @@ window.addEventListener('keydown', function(e){
                 ShowFromTray();
                 var answer = MessageBox.Show(this, Lang.T("¿Seguro que quieres cerrar Tenhou?\n\nSi estás en una partida, te desconectarás.",
                     "Close Tenhou?\n\nIf you're in a game, you'll be disconnected."),
-                    "Tenhou", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+                    "Rinshan", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (answer != DialogResult.Yes) { e.Cancel = true; return; }
             }
             confirmedExit = true;
@@ -372,7 +387,7 @@ window.addEventListener('keydown', function(e){
             trayShow.Text = Lang.T("Mostrar Tenhou", "Show Tenhou");
             trayOpenMenu.Text = Lang.T("Abrir menú", "Open menu");
             trayExit.Text = Lang.T("Salir", "Exit");
-            if (panel != null) panel.Text = Lang.T("Tenhou — Menú", "Tenhou — Menu");
+            if (panel != null) panel.Text = Lang.T("Rinshan — Menú", "Rinshan — Menu");
         }
 
         // Tells translate.js whether to run. Scripts added on document creation only run on the next load.
@@ -591,7 +606,7 @@ window.addEventListener('keydown', function(e){
             {
                 MessageBox.Show(this, Lang.T("Copia primero un enlace de replay de Tenhou (tenhou.net/0/?log=...).",
                     "Copy a Tenhou replay link first (tenhou.net/0/?log=...)."),
-                    "Tenhou", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             OpenReplay(url);

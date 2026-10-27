@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     // A finished game as stored by the Tenhou web client in localStorage ("log0".."log39", newest at "lognext"-1)
     class GameLog

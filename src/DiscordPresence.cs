@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Web.Script.Serialization;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     // Minimal Discord Rich Presence client over Discord's local IPC pipe (\\.\pipe\discord-ipc-N).
     // Runs on its own thread: callers just set the latest activity and it is sent when Discord is available.

@@ -1,7 +1,7 @@
 // Translates the Japanese text that Tenhou's web client leaves untranslated (rooms, rules, ranks, yaku,
 // draws, menus). Tenhou's own language files already cover its settings and buttons; this only fills
 // the gaps. It only rewrites text on screen: it never touches the game connection or the page's logic.
-// Written from scratch for Tenhou Desktop. Each entry is [Japanese, English, Spanish].
+// Written from scratch for Rinshan. Each entry is [Japanese, English, Spanish].
 (function () {
   if (!/(^|\.)(tenhou\.net|ron2\.jp)$/.test(location.hostname)) return;
   if ((window.__tdk || {}).translate === false) return;

@@ -4,9 +4,9 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
-    // Simple key=value settings stored in %LOCALAPPDATA%\TenhouDesktop\settings.ini
+    // Simple key=value settings stored in %LOCALAPPDATA%\Rinshan\settings.ini
     class Settings
     {
         public string Url = "https://tenhou.net/3/";

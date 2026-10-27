@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     static class Native
     {

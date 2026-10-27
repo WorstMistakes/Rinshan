@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace TenhouDesktop
+namespace Rinshan
 {
     // The F2 menu: a standalone window drawn with HTML (src/panel.html). It can be moved anywhere, even to
     // another monitor, and closing it only hides it so it reopens instantly with F2.
@@ -23,7 +23,7 @@ namespace TenhouDesktop
 
         public MenuPanel(CoreWebView2Environment env)
         {
-            Text = Lang.T("Tenhou — Menú", "Tenhou — Menu");
+            Text = Lang.T("Rinshan — Menú", "Rinshan — Menu");
             StartPosition = FormStartPosition.Manual;
             MinimumSize = new Size(760, 480);
             BackColor = Color.FromArgb(0x14, 0x10, 0x19);
@@ -58,7 +58,7 @@ namespace TenhouDesktop
                     pageReady = true;
                     if (pendingState != null) Render(pendingState);
                 };
-                core.NavigateToString(Program.LoadResource("TenhouDesktop.panel.html"));
+                core.NavigateToString(Program.LoadResource("Rinshan.panel.html"));
             };
         }
 

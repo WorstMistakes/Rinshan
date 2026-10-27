@@ -141,7 +141,8 @@ namespace Rinshan
             {
                 MessageBox.Show(this, Lang.T(
                     "No se pudo iniciar WebView2.\n\nInstala el \"Microsoft Edge WebView2 Runtime\" e inténtalo de nuevo.\n\n",
-                    "WebView2 could not be started.\n\nInstall the \"Microsoft Edge WebView2 Runtime\" and try again.\n\n") + ex.Message,
+                    "WebView2 could not be started.\n\nInstall the \"Microsoft Edge WebView2 Runtime\" and try again.\n\n",
+                    "Não foi possível iniciar o WebView2.\n\nInstale o \"Microsoft Edge WebView2 Runtime\" e tente de novo.\n\n") + ex.Message,
                     "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 confirmedExit = true;
                 Close();
@@ -234,11 +235,12 @@ namespace Rinshan
             loadWatchdog.Stop();
             if (web.CoreWebView2 != null && web.CoreWebView2.Source.StartsWith("https://tenhou.net/"))
                 web.CoreWebView2.ExecuteScriptAsync(LoadFailedOverlay
-                    .Replace("%TITLE%", Lang.T("No se puede conectar con Tenhou", "Cannot connect to Tenhou"))
+                    .Replace("%TITLE%", Lang.T("No se puede conectar con Tenhou", "Cannot connect to Tenhou", "Não foi possível conectar ao Tenhou"))
                     .Replace("%TEXT%", Lang.T(
                         "Puede estar en mantenimiento o haber un problema de conexión con su servidor. Inténtalo de nuevo en unos minutos.",
-                        "It may be under maintenance, or there is a problem reaching its server. Try again in a few minutes."))
-                    .Replace("%RETRY%", Lang.T("Reintentar", "Retry")));
+                        "It may be under maintenance, or there is a problem reaching its server. Try again in a few minutes.",
+                        "Pode estar em manutenção ou com problemas de conexão com o servidor. Tente de novo em alguns minutos."))
+                    .Replace("%RETRY%", Lang.T("Reintentar", "Retry", "Tentar de novo")));
         }
 
         static bool IsTenhouViewer(string url)
@@ -303,8 +305,9 @@ window.addEventListener('keydown', function(e){
                 if (!trayHintShown)
                 {
                     trayHintShown = true;
-                    ShowBalloon(Lang.T("Tenhou sigue abierto", "Tenhou is still running"),
-                        Lang.T("Haz clic en el ícono de la bandeja para volver.", "Click the tray icon to bring it back."));
+                    ShowBalloon(Lang.T("Tenhou sigue abierto", "Tenhou is still running", "O Tenhou continua aberto"),
+                        Lang.T("Haz clic en el ícono de la bandeja para volver.", "Click the tray icon to bring it back.",
+                            "Clique no ícone da bandeja para voltar."));
                 }
             }
             else if (WindowState != FormWindowState.Minimized)
@@ -327,7 +330,7 @@ window.addEventListener('keydown', function(e){
             if (ActiveForm == this) return;
             if (Visible) Native.FlashUntilFocused(Handle);
             else ShowBalloon("Rinshan", Lang.T("Hay sonido en Tenhou: ¿empezó la partida?",
-                "Tenhou is playing a sound: has your game started?"));
+                "Tenhou is playing a sound: has your game started?", "O Tenhou está tocando um som: sua partida começou?"));
         }
 
         void ShowBalloon(string title, string text, bool isUpdate = false)
@@ -375,7 +378,8 @@ window.addEventListener('keydown', function(e){
             {
                 ShowFromTray();
                 var answer = MessageBox.Show(this, Lang.T("¿Seguro que quieres cerrar Tenhou?\n\nSi estás en una partida, te desconectarás.",
-                    "Close Tenhou?\n\nIf you're in a game, you'll be disconnected."),
+                    "Close Tenhou?\n\nIf you're in a game, you'll be disconnected.",
+                    "Fechar o Tenhou?\n\nSe estiver em uma partida, você será desconectado."),
                     "Rinshan", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
                 if (answer != DialogResult.Yes) { e.Cancel = true; return; }
             }
@@ -405,10 +409,10 @@ window.addEventListener('keydown', function(e){
 
         void ApplyLanguageTexts()
         {
-            trayShow.Text = Lang.T("Mostrar Tenhou", "Show Tenhou");
-            trayOpenMenu.Text = Lang.T("Abrir menú", "Open menu");
-            trayExit.Text = Lang.T("Salir", "Exit");
-            if (panel != null) panel.Text = Lang.T("Rinshan — Menú", "Rinshan — Menu");
+            trayShow.Text = Lang.T("Mostrar Tenhou", "Show Tenhou", "Mostrar Tenhou");
+            trayOpenMenu.Text = Lang.T("Abrir menú", "Open menu", "Abrir menu");
+            trayExit.Text = Lang.T("Salir", "Exit", "Sair");
+            if (panel != null) panel.Text = Lang.T("Rinshan — Menú", "Rinshan — Menu", "Rinshan — Menu");
         }
 
         // Tells translate.js whether to run. Scripts added on document creation only run on the next load.
@@ -423,7 +427,7 @@ window.addEventListener('keydown', function(e){
 
         void SetLanguage(string language)
         {
-            if (language != "auto" && language != "es" && language != "en") return;
+            if (language != "auto" && !Lang.IsSupported(language)) return;
             settings.Language = language;
             Lang.Set(language);
             ApplyLanguageTexts();
@@ -460,8 +464,9 @@ window.addEventListener('keydown', function(e){
             UpdatePanel();
             bool isNew = update != null && (known == null || known.Version != update.Version);
             if (isNew && !manual && (panel == null || !panel.Visible))
-                ShowBalloon(Lang.T("Hay una nueva versión de Rinshan", "A new version of Rinshan is available"),
-                    Lang.T("Abre el menú (F2) para actualizar a la v", "Open the menu (F2) to update to v") + Updater.Format(update.Version) + ".", true);
+                ShowBalloon(Lang.T("Hay una nueva versión de Rinshan", "A new version of Rinshan is available", "Há uma nova versão do Rinshan"),
+                    Lang.T("Abre el menú (F2) para actualizar a la v", "Open the menu (F2) to update to v", "Abra o menu (F2) para atualizar para a v") +
+                    Updater.Format(update.Version) + ".", true);
         }
 
         async void InstallUpdate()
@@ -469,7 +474,8 @@ window.addEventListener('keydown', function(e){
             if (update == null || updateStatus == "installing") return;
             var answer = MessageBox.Show(panel != null && panel.Visible ? (IWin32Window)panel : this, Lang.T(
                 "Rinshan se cerrará para instalar la v" + Updater.Format(update.Version) + " y se abrirá de nuevo.\n\nSi estás en una partida, te desconectarás.",
-                "Rinshan will close to install v" + Updater.Format(update.Version) + " and open again.\n\nIf you're in a game, you'll be disconnected."),
+                "Rinshan will close to install v" + Updater.Format(update.Version) + " and open again.\n\nIf you're in a game, you'll be disconnected.",
+                "O Rinshan vai fechar para instalar a v" + Updater.Format(update.Version) + " e abrir de novo.\n\nSe estiver em uma partida, você será desconectado."),
                 "Rinshan", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
             if (answer != DialogResult.OK) return;
 
@@ -487,7 +493,8 @@ window.addEventListener('keydown', function(e){
                 UpdatePanel();
                 MessageBox.Show(panel != null && panel.Visible ? (IWin32Window)panel : this, Lang.T(
                     "No se pudo actualizar. Puedes descargar la nueva versión a mano desde GitHub.\n\n",
-                    "The update failed. You can download the new version by hand from GitHub.\n\n") + ex.Message,
+                    "The update failed. You can download the new version by hand from GitHub.\n\n",
+                    "Não foi possível atualizar. Você pode baixar a nova versão manualmente no GitHub.\n\n") + ex.Message,
                     "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
@@ -681,7 +688,7 @@ window.addEventListener('keydown', function(e){
         void OpenReplay(string url)
         {
             if (env == null) return;
-            new BrowserWindow(env, Lang.T("Replay de Tenhou", "Tenhou replay"), url, null, Icon).Show();
+            new BrowserWindow(env, Lang.T("Replay de Tenhou", "Tenhou replay", "Replay do Tenhou"), url, null, Icon).Show();
         }
 
         void OpenReplayFromClipboard()
@@ -691,7 +698,8 @@ window.addEventListener('keydown', function(e){
             if (url == null)
             {
                 MessageBox.Show(this, Lang.T("Copia primero un enlace de replay de Tenhou (tenhou.net/0/?log=...).",
-                    "Copy a Tenhou replay link first (tenhou.net/0/?log=...)."),
+                    "Copy a Tenhou replay link first (tenhou.net/0/?log=...).",
+                    "Copie primeiro um link de replay do Tenhou (tenhou.net/0/?log=...)."),
                     "Rinshan", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }

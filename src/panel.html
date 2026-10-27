@@ -312,6 +312,7 @@
             <button data-lang="auto" data-i18n="languageAuto"></button>
             <button data-lang="es">Español</button>
             <button data-lang="en">English</button>
+            <button data-lang="pt">Português</button>
           </div>
         </div>
         <label class="setting">
@@ -426,7 +427,7 @@
       reloadNotice: 'Recarga Tenhou para aplicar el cambio. Mejor hazlo fuera de una partida.',
       languageHeader: 'Idioma', languageTitle: 'Idioma de la app y de Tenhou', languageDesc: 'Automático sigue el idioma de Windows',
       languageAuto: 'Automático',
-      translateTitle: 'Traducir lo que Tenhou deja en japonés', translateDesc: 'Salas, reglas, rangos, yakus y menús',
+      translateTitle: 'Traducir lo que Tenhou deja en japonés', translateDesc: 'Salas, reglas, rangos y menús. Los yakus quedan en romaji',
       windowHeader: 'Ventana de Tenhou',
       trayTitle: 'Minimizar a la bandeja', trayDesc: 'Al minimizar, Tenhou se esconde junto al reloj',
       confirmTitle: 'Confirmar antes de cerrar', confirmDesc: 'Evita desconectarte de una partida por accidente',
@@ -465,7 +466,7 @@
       reloadNotice: 'Reload Tenhou to apply the change. Best done outside a game.',
       languageHeader: 'Language', languageTitle: 'App and Tenhou language', languageDesc: 'Automatic follows your Windows language',
       languageAuto: 'Automatic',
-      translateTitle: 'Translate what Tenhou leaves in Japanese', translateDesc: 'Rooms, rules, ranks, yaku and menus',
+      translateTitle: 'Translate what Tenhou leaves in Japanese', translateDesc: 'Rooms, rules, ranks and menus. Yaku stay in romaji',
       windowHeader: 'Tenhou window',
       trayTitle: 'Minimize to tray', trayDesc: 'When minimized, Tenhou hides next to the clock',
       confirmTitle: 'Confirm before closing', confirmDesc: 'Avoids leaving a game by accident',
@@ -485,6 +486,45 @@
       updateFailed: "Couldn't reach GitHub. Check your connection.", updateInstallFailed: "Couldn't install v{v}. Try again or download it from GitHub.",
       bannerAvailable: 'A new version of Rinshan is out: v{v}. It installs in seconds and keeps your login and settings.',
       copied: 'Link copied'
+    },
+    pt: {
+      navGames: 'Partidas', navDisplay: 'Som e tela', navOptions: 'Opções',
+      keyMenu: 'Abrir / fechar menu', keyFullscreen: 'Tela cheia', keyMute: 'Silenciar', keyHide: 'Ocultar menu',
+      exit: 'Sair do Tenhou',
+      gamesSub: 'Reveja suas partidas recentes ou mande-as para análise. O link é colado para você, mas você decide quando enviar.',
+      openCopied: 'Abrir replay copiado', history: 'Histórico',
+      noGames: 'Ainda não há partidas', noGamesDesc: 'Elas aparecem aqui quando você terminar sua primeira partida no app.',
+      lastGame: 'Última partida', mortal: 'Analisar com Mortal', naga: 'Analisar com NAGA', watch: 'Ver replay',
+      replay: 'Replay', copy: 'Copiar', only4p: 'só 4p', credits: 'créditos',
+      nagaSanma: 'O NAGA só analisa partidas de 4 jogadores', nagaCredits: 'Usa créditos do NAGA. O link é colado, mas não é enviado.',
+      displaySub: 'Ajuste como o Tenhou aparece e soa.',
+      muteTitle: 'Silenciar o Tenhou', muteDesc: 'Silencia só o Tenhou · Ctrl+M',
+      fullscreenDesc: 'Sem bordas nem barra de título · F11', zoomDesc: 'Também com Ctrl + roda do mouse · Ctrl+0 restaura',
+      reloadTitle: 'Recarregar o Tenhou', reloadDesc: 'Se algo travar · F5', reload: 'Recarregar',
+      optionsSub: 'Como o app se comporta na sua área de trabalho.',
+      reloadNotice: 'Recarregue o Tenhou para aplicar a mudança. De preferência fora de uma partida.',
+      languageHeader: 'Idioma', languageTitle: 'Idioma do app e do Tenhou', languageDesc: 'Automático segue o idioma do Windows',
+      languageAuto: 'Automático',
+      translateTitle: 'Traduzir o que o Tenhou deixa em japonês', translateDesc: 'Salas, regras, ranks e menus. Os yaku ficam em romaji',
+      windowHeader: 'Janela do Tenhou',
+      trayTitle: 'Minimizar para a bandeja', trayDesc: 'Ao minimizar, o Tenhou fica escondido perto do relógio',
+      confirmTitle: 'Confirmar antes de fechar', confirmDesc: 'Evita sair de uma partida sem querer',
+      awakeTitle: 'Manter a tela ligada', awakeDesc: 'Enquanto a janela do Tenhou estiver visível',
+      discordTitle: 'Mostrar no Discord', discordDesc: 'Lobby, procurando partida, sala, rodada e colocação, como o osu!',
+      appIdTitle: 'ID do aplicativo do Discord (avançado)', save: 'Salvar',
+      appIdOwn: 'Usando seu próprio ID. Apague e salve para voltar ao do app.',
+      appIdBuiltIn: 'Opcional: o app já vem com um. O Discord precisa estar aberto neste PC.',
+      appIdNone: 'Crie um em discord.com/developers/applications e cole aqui o Application ID.',
+      thisWindowHeader: 'Esta janela',
+      onTopTitle: 'Manter este menu sempre no topo', onTopDesc: 'Útil se você o deixa ao lado do jogo',
+      updatesHeader: 'Atualizações',
+      autoUpdateTitle: 'Procurar atualizações', autoUpdateDesc: 'Avisa quando sai uma versão nova. Nunca instala sem perguntar.',
+      checkNow: 'Procurar agora', releaseNotes: 'Novidades', installUpdate: 'Atualizar e reiniciar',
+      updateIdle: 'Veja se há uma versão nova', updateChecking: 'Procurando…', updateLatest: 'Você está na versão mais recente',
+      updateAvailable: 'A v{v} está disponível', updateInstalling: 'Baixando a v{v}…',
+      updateFailed: 'Não foi possível acessar o GitHub. Verifique sua conexão.', updateInstallFailed: 'Não foi possível instalar a v{v}. Tente de novo ou baixe pelo GitHub.',
+      bannerAvailable: 'Saiu uma nova versão do Rinshan: v{v}. Instala em segundos e mantém seu login e suas configurações.',
+      copied: 'Link copiado'
     }
   };
   var lang = 'es';

@@ -31,8 +31,8 @@
   | Game | Playing · Tokujou 特上 · Hanchan · 4p — South 2 · 1 honba · 2nd (28,300) |
   | End | Finished a game — Placed 1st |
 
-- **English and Spanish**: the app comes in both languages, and it switches Tenhou's own interface to match.
-- **Fills in Tenhou's missing translations**: Tenhou's web client still shows a lot of Japanese (rooms, rules, ranks, yaku, draws, menus). The app translates those on screen into English or Spanish. It only changes text, never the game itself, and you can turn it off in **F2 → Options**.
+- **English, Spanish and Portuguese**: the app comes in all three, and it switches Tenhou's own interface to match.
+- **Fills in Tenhou's missing translations**: Tenhou's web client still shows a lot of Japanese (rooms, rules, ranks, yaku, draws, menus). The app translates those on screen into your language. Yaku and mahjong terms stay in romaji in every language (Tanyao, Chiitoitsu, Ryuukyoku…), so everyone uses the same words. It only changes text, never the game itself, and you can turn it off in **F2 → Options**.
 - **System tray**: minimizing hides it next to the clock while it keeps running at full speed.
 - **Notifications**: if Tenhou plays a sound while you're in another window (e.g. a match starts), the taskbar button flashes.
 - **No accidents**: asks before closing so you don't disconnect from a game, and keeps the screen awake while you play.
@@ -65,7 +65,7 @@ Requires **Windows 10 or 11**. It uses WebView2, the Microsoft Edge engine that 
 
 **How does it know which round I'm in, for Discord?** It listens to the messages Tenhou receives from its server (game start, each round, game end) without modifying them, and only uses information you already see on screen. You can turn it off in **F2 → Options → Show on Discord**.
 
-**How do I change the language?** **F2 → Options → Language**: Automatic (follows Windows), Español or English. Reload Tenhou afterwards (`F5`), ideally outside a game.
+**How do I change the language?** **F2 → Options → Language**: Automatic (follows Windows), Español, English or Português. Reload Tenhou afterwards (`F5`), ideally outside a game.
 
 **A translation is wrong or something is still in Japanese.** Please [open an issue](../../issues) with a screenshot. The translations live in [`src/translate.js`](src/translate.js) and are easy to extend.
 

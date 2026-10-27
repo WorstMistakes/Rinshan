@@ -2,27 +2,32 @@ using System.Globalization;
 
 namespace Rinshan
 {
-    // The app's interface language: Spanish or English. "auto" follows Windows (Spanish if Windows is
-    // in Spanish, English otherwise).
+    // The app's interface language: Spanish, English or Portuguese. "auto" follows Windows (Spanish or
+    // Portuguese if Windows is in one of them, English otherwise).
     static class Lang
     {
-        public static bool English { get; private set; }
+        public static string Code { get; private set; }
 
-        public static string Code
+        static Lang()
         {
-            get { return English ? "en" : "es"; }
+            Code = "en";
         }
 
         public static void Set(string setting)
         {
-            English = setting == "en" ||
-                (setting != "es" && CultureInfo.CurrentUICulture.TwoLetterISOLanguageName != "es");
+            var system = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+            Code = IsSupported(setting) ? setting : system == "es" || system == "pt" ? system : "en";
+        }
+
+        public static bool IsSupported(string code)
+        {
+            return code == "es" || code == "en" || code == "pt";
         }
 
         // Picks the text for the current language
-        public static string T(string es, string en)
+        public static string T(string es, string en, string pt)
         {
-            return English ? en : es;
+            return Code == "es" ? es : Code == "pt" ? pt : en;
         }
     }
 }

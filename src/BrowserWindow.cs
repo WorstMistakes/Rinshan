@@ -59,10 +59,10 @@ namespace Rinshan
             var bar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, RenderMode = ToolStripRenderMode.System };
             if (fillValue != null)
             {
-                bar.Items.Add(new ToolStripLabel(Lang.T("Partida: ", "Game: ") + fillValue));
-                bar.Items.Add(new ToolStripButton(Lang.T("Copiar enlace", "Copy link"), null, (s, e) => Clipboard.SetText(fillValue)));
+                bar.Items.Add(new ToolStripLabel(Lang.T("Partida: ", "Game: ", "Partida: ") + fillValue));
+                bar.Items.Add(new ToolStripButton(Lang.T("Copiar enlace", "Copy link", "Copiar link"), null, (s, e) => Clipboard.SetText(fillValue)));
             }
-            bar.Items.Add(new ToolStripButton(Lang.T("Abrir en el navegador", "Open in browser"), null, (s, e) =>
+            bar.Items.Add(new ToolStripButton(Lang.T("Abrir en el navegador", "Open in browser", "Abrir no navegador"), null, (s, e) =>
             {
                 var current = web.Source != null ? web.Source.ToString() : startUrl;
                 if (fillValue != null) Clipboard.SetText(fillValue);
@@ -71,7 +71,8 @@ namespace Rinshan
             if (fillValue != null)
                 bar.Items.Add(new ToolStripLabel(Lang.T(
                     "El enlace se pega solo. Revisa que sea la partida correcta y pulsa el botón de la página.",
-                    "The link is pasted for you. Check it's the right game, then press the button on the page."))
+                    "The link is pasted for you. Check it's the right game, then press the button on the page.",
+                    "O link já é colado. Confira se é a partida certa e aperte o botão da página."))
                     { ForeColor = SystemColors.GrayText });
 
             web.Dock = DockStyle.Fill;

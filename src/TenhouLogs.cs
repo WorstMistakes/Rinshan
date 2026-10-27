@@ -47,7 +47,7 @@ namespace Rinshan
 
         public string Players
         {
-            get { return IsSanma ? Lang.T("3 jugadores", "3 players") : Lang.T("4 jugadores", "4 players"); }
+            get { return IsSanma ? Lang.T("3 jugadores", "3 players", "3 jogadores") : Lang.T("4 jugadores", "4 players", "4 jogadores"); }
         }
     }
 

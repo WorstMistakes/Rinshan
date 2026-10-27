@@ -23,7 +23,7 @@ namespace Rinshan
 
         public MenuPanel(CoreWebView2Environment env)
         {
-            Text = Lang.T("Rinshan — Menú", "Rinshan — Menu");
+            Text = Lang.T("Rinshan — Menú", "Rinshan — Menu", "Rinshan — Menu");
             StartPosition = FormStartPosition.Manual;
             MinimumSize = new Size(760, 480);
             BackColor = Color.FromArgb(0x14, 0x10, 0x19);

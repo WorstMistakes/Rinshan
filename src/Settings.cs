@@ -21,7 +21,7 @@ namespace Rinshan
         public bool PanelOnTop = false;
         public bool DiscordEnabled = true;
         public string DiscordAppId = "";
-        public string Language = "auto";    // auto, es or en
+        public string Language = "auto";    // auto, es, en or pt
         public bool TranslateTenhou = true;
         public bool CheckUpdates = true;
 
@@ -57,7 +57,7 @@ namespace Rinshan
             PanelOnTop = ReadBool(values, "panelontop", PanelOnTop);
             DiscordEnabled = ReadBool(values, "discord", DiscordEnabled);
             if (values.TryGetValue("discordappid", out s)) DiscordAppId = s;
-            if (values.TryGetValue("language", out s) && (s == "auto" || s == "es" || s == "en")) Language = s;
+            if (values.TryGetValue("language", out s) && (s == "auto" || Lang.IsSupported(s))) Language = s;
             // Settings from before 1.2 have no language: those versions were Spanish only, so stay in Spanish
             else if (!values.ContainsKey("language")) Language = "es";
             TranslateTenhou = ReadBool(values, "translatetenhou", TranslateTenhou);

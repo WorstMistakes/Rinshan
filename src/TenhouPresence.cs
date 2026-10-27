@@ -45,6 +45,7 @@ namespace Rinshan
         const string LargeImage = "tenhou";
         static readonly string[] WindsEs = { "Este", "Sur", "Oeste", "Norte" };
         static readonly string[] WindsEn = { "East", "South", "West", "North" };
+        static readonly string[] WindsPt = { "Leste", "Sul", "Oeste", "Norte" };
 
         string details, state;
         long? startedAt;
@@ -82,18 +83,18 @@ namespace Rinshan
             {
                 case "lobby":
                     inGame = false;
-                    Show(Lang.T("En el lobby", "In the lobby"), null, null);
+                    Show(Lang.T("En el lobby", "In the lobby", "No lobby"), null, null);
                     break;
                 case "search":
                     var t = (Get(e, "t") ?? "").Split(',');
                     int searchType;
                     var room = t.Length > 1 && int.TryParse(t[1], out searchType) ? RoomLabel(searchType, t[0]) : null;
-                    Show(Lang.T("Buscando partida", "Looking for a game"), room, Now());
+                    Show(Lang.T("Buscando partida", "Looking for a game", "Procurando partida"), room, Now());
                     break;
                 case "game":
                     int.TryParse(Get(e, "type"), out gameType);
                     inGame = true;
-                    Show(Lang.T("Jugando · ", "Playing · ") + RoomLabel(gameType, Get(e, "lobby")), Lang.T("Empezando", "Starting"), Now());
+                    Show(Lang.T("Jugando · ", "Playing · ", "Jogando · ") + RoomLabel(gameType, Get(e, "lobby")), Lang.T("Empezando", "Starting", "Começando"), Now());
                     break;
                 case "round":
                     if (!inGame) return false;
@@ -102,7 +103,7 @@ namespace Rinshan
                 case "end":
                     if (!inGame) return false;
                     inGame = false;
-                    Show(Lang.T("Terminó una partida · ", "Finished a game · ") + RoomLabel(gameType, null), ResultLabel(Get(e, "owari")), null);
+                    Show(Lang.T("Terminó una partida · ", "Finished a game · ", "Terminou uma partida · ") + RoomLabel(gameType, null), ResultLabel(Get(e, "owari")), null);
                     break;
                 case "offline":
                     inGame = false;
@@ -125,7 +126,7 @@ namespace Rinshan
             var activity = new Dictionary<string, object> {
                 { "details", details },
                 { "assets", new Dictionary<string, object> { { "large_image", LargeImage }, { "large_text", "Rinshan · for Tenhou" } } },
-                { "buttons", new object[] { new Dictionary<string, object> { { "label", Lang.T("Jugar Tenhou", "Play Tenhou") }, { "url", "https://tenhou.net/3/" } } } }
+                { "buttons", new object[] { new Dictionary<string, object> { { "label", Lang.T("Jugar Tenhou", "Play Tenhou", "Jogar Tenhou") }, { "url", "https://tenhou.net/3/" } } } }
             };
             if (state != null) activity["state"] = state;
             if (startedAt != null) activity["timestamps"] = new Dictionary<string, object> { { "start", startedAt.Value } };
@@ -147,7 +148,7 @@ namespace Rinshan
         public static string RoomLabel(int type, string lobby)
         {
             string room;
-            if (!string.IsNullOrEmpty(lobby) && lobby != "0") room = Lang.T("Sala privada", "Private lobby");
+            if (!string.IsNullOrEmpty(lobby) && lobby != "0") room = Lang.T("Sala privada", "Private lobby", "Sala privada");
             else
             {
                 switch (type & 0xA0)
@@ -159,7 +160,7 @@ namespace Rinshan
                 }
             }
             return room + " · " + ((type & 0x08) != 0 ? "Hanchan" : "Tonpuu") +
-                ((type & 0x40) != 0 ? Lang.T(" rápido", " fast") : "") + " · " + ((type & 0x10) != 0 ? "3p" : "4p");
+                ((type & 0x40) != 0 ? Lang.T(" rápido", " fast", " rápido") : "") + " · " + ((type & 0x10) != 0 ? "3p" : "4p");
         }
 
         // seed starts with the round index (0 = East 1) and honba; ten holds the scores in hundreds, seat 0 is us
@@ -168,7 +169,7 @@ namespace Rinshan
             var s = (seed ?? "").Split(',');
             int round, honba;
             if (s.Length < 2 || !int.TryParse(s[0], out round) || !int.TryParse(s[1], out honba)) return null;
-            var winds = Lang.English ? WindsEn : WindsEs;
+            var winds = Lang.Code == "es" ? WindsEs : Lang.Code == "pt" ? WindsPt : WindsEn;
             var label = winds[(round / 4) % 4] + " " + (round % 4 + 1) + (honba > 0 ? " · " + honba + " honba" : "");
 
             var scores = ParseInts(ten);
@@ -176,16 +177,17 @@ namespace Rinshan
             {
                 var active = (gameType & 0x10) != 0 ? scores.Take(3).ToList() : scores;
                 int place = 1 + active.Skip(1).Count(x => x > active[0]);
-                var points = (active[0] * 100).ToString("N0", new CultureInfo(Lang.English ? "en-US" : "es-ES"));
+                var points = (active[0] * 100).ToString("N0", new CultureInfo(Lang.T("es-ES", "en-US", "pt-BR")));
                 label += " · " + Place(place) + " (" + points + ")";
             }
             return label;
         }
 
-        // 1.º / 1st
+        // 1.º / 1st / 1º
         static string Place(int n)
         {
-            if (!Lang.English) return n + ".º";
+            if (Lang.Code == "es") return n + ".º";
+            if (Lang.Code == "pt") return n + "º";
             return n + (n == 1 ? "st" : n == 2 ? "nd" : n == 3 ? "rd" : "th");
         }
 
@@ -202,7 +204,7 @@ namespace Rinshan
             }
             if (scores.Count == 0) return null;
             int place = 1 + scores.Skip(1).Count(x => x > scores[0]);
-            return Lang.T("Quedó ", "Placed ") + Place(place);
+            return Lang.T("Quedó ", "Placed ", "Ficou em ") + Place(place);
         }
 
         static List<int> ParseInts(string csv)
